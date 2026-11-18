@@ -3165,54 +3165,47 @@ function encodeMentions(text) {
   if (mn) t = t.split('@' + mn).join(AT_ME);
   return t;
 }
-function atAliases() {
-  const H = S.nameHistory || {};
-  const peerRemark = ((S.peer && S.peer.remark) || '').trim();
-  const peerId = ((S.peer && S.peer.id) || '').trim();
-  const meId = ((S.me && S.me.id) || '').trim();
-  return {
-    peer: [...(Array.isArray(H.peer) ? H.peer : []), peerRemark, peerId, atName(S.peer)].filter(Boolean),
-    me: [...(Array.isArray(H.me) ? H.me : []), meId, atName(S.me)].filter(Boolean)
-  };
-}
-/* 把历史动态里能认出来的 @旧名 永久改成内部标记：以后永远显示当前昵称、永远是蓝色 */
-function normalizeMentions() {
-  let changed = false;
-  const A = atAliases();
-  (S.posts || []).forEach(p => {
-    if (!p.text) return;
-    let t = p.text;
-    A.peer.forEach(n => { if (n) t = t.split('@' + n).join(AT_PEER); });
-    A.me.forEach(n => { if (n) t = t.split('@' + n).join(AT_ME); });
-    t = t.split('@对方').join(AT_PEER).split('@我').join(AT_ME);
-    /* 无法识别的不动：宁可不变蓝，也不能把“@我”错认成对方 */
-    if (t !== p.text) { p.text = t; changed = true; }
+/* 只有从「@」面板里选的人才会被认成提及 */
+let pendingMentions = [];
+function encodePending(text) {
+  let t = String(text || '');
+  pendingMentions.forEach(m => {
+    const token = '@' + m.name;
+    const i = t.indexOf(token);
+    if (i < 0) return;
+    t = t.slice(0, i) + (m.kind === 'peer' ? AT_PEER : AT_ME) + t.slice(i + token.length);
   });
-  if (changed) save();
+  pendingMentions = [];
+  return t;
+}
+/* 进入编辑时把标记还原成 @昵称，并把它们记成“待转换” */
+function decodeForEdit(raw) {
+  const s = String(raw || '');
+  let out = '', i = 0;
+  while (i < s.length) {
+    if (s.startsWith(AT_PEER, i)) {
+      const nm = atName(S.peer);
+      out += '@' + nm; pendingMentions.push({ kind: 'peer', name: nm }); i += AT_PEER.length;
+    } else if (s.startsWith(AT_ME, i)) {
+      const nm = atName(S.me);
+      out += '@' + nm; pendingMentions.push({ kind: 'me', name: nm }); i += AT_ME.length;
+    } else {
+      out += s[i++];
+    }
+  }
+  return out;
 }
 
 function decodeMentions(text) {
-  let t = String(text || '');
-  const A = atAliases();
-  const cp = atName(S.peer), cm = atName(S.me);
-  A.peer.forEach(n => { if (n && n !== cp) t = t.split('@' + n).join(AT_PEER); });
-  A.me.forEach(n => { if (n && n !== cm) t = t.split('@' + n).join(AT_ME); });
-  t = t.split('@对方').join(AT_PEER).split('@我').join(AT_ME);
-  return t.split(AT_PEER).join('@' + cp).split(AT_ME).join('@' + cm);
+  return String(text || '')
+    .split(AT_PEER).join('@' + atName(S.peer))
+    .split(AT_ME).join('@' + atName(S.me));
 }
 
-const linkifyAt = s => {
-  let out = esc(s);
-  const A = atAliases();
-  const cp = atName(S.peer), cm = atName(S.me);
-  /* 旧昵称、当前昵称、旧的 @对方 / @我 都归一到内部标记 */
-  A.peer.forEach(n => { if (n) out = out.split('@' + esc(n)).join(AT_PEER); });
-  A.me.forEach(n => { if (n) out = out.split('@' + esc(n)).join(AT_ME); });
-  out = out.split('@对方').join(AT_PEER).split('@我').join(AT_ME);
-  return out
-    .split(AT_PEER).join(`<span class="at">@${esc(cp)}</span>`)
-    .split(AT_ME).join(`<span class="at">@${esc(cm)}</span>`);
-};
+/* 渲染：只把内部标记变成蓝色，手打的 @ 一律普通文字 */
+const linkifyAt = s => esc(s)
+  .split(AT_PEER).join(`<span class="at">@${esc(atName(S.peer))}</span>`)
+  .split(AT_ME).join(`<span class="at">@${esc(atName(S.me))}</span>`);
 
 /* 回复区：默认只显示前两条，点「查看全部」原地展开 */
 const expandedCmt = new Set();
@@ -3236,7 +3229,7 @@ function postCard(p) {
   const src = p.repostOf ? resolveSrc(p.repostOf, 0) : null;
   const repost = p.repostOf ? `<div class="repost">${src ? `
       <div class="repost-h"><b>${esc(src.by === 'peer' ? peerLabel() : S.me.name)}</b><span>${atSpan(src.by === 'peer' ? peerHandle() : (S.me.id || ''))}${postTime(src.ts)}</span></div>
-      ${src.text ? `<div class="repost-t">${esc(src.text)}</div>` : ''}
+      ${src.text ? `<div class="repost-t">${linkifyAt(src.text)}</div>` : ''}
       ${(src.images || []).filter(k => MEDIA[k]).slice(0, 1).map(k => `<img class="repost-img" src="${MEDIA[k]}" alt="">`).join('')}` : `<div class="repost-t" style="color:#9A9AA4">原动态已删除</div>`}</div>` : '';
   return `<div class="post${p.repostOf ? ' rp-card' : ''}">
     <div class="post-head">
@@ -3303,7 +3296,7 @@ function renderComposeRepost() {
   const isPeer = src.by === 'peer';
   box.innerHTML = `<div class="cr-card">
       <div class="cr-h"><b>${esc(isPeer ? peerLabel() : S.me.name)}</b><span>${atSpan(isPeer ? peerHandle() : (S.me.id || ''))}<em class="rp-pill">${IC_REPOST}转发</em>${postTime(src.ts)}</span></div>
-      ${src.text ? `<div class="cr-t">${esc(src.text)}</div>` : ''}
+      ${src.text ? `<div class="cr-t">${linkifyAt(src.text)}</div>` : ''}
       ${(src.images || []).filter(k => MEDIA[k]).slice(0, 1).map(k => `<img class="repost-img" src="${MEDIA[k]}" alt="">`).join('')}
       <button class="cr-x" id="composeRepostX" aria-label="取消转发">×</button>
     </div>`;
@@ -3313,9 +3306,11 @@ function renderComposeRepost() {
 
 PAGE_RENDER.compose = function () {
   const editing = composeEdit ? (S.posts || []).find(p => p.id === composeEdit) : null;
+  pendingMentions = [];
   composeImgs = editing ? (editing.images || []).map(k => MEDIA[k]).filter(Boolean) : [];
   const t = $('#composeText');
-  if (t) { t.value = editing ? decodeMentions(editing.text || '') : ''; t.placeholder = composeRepost ? '说点什么…' : '写点什么…'; }
+  const tval = editing ? decodeForEdit(editing.text || '') : '';
+  if (t) { t.value = tval; t.placeholder = composeRepost ? '说点什么…' : '写点什么…'; }
   const ttl = document.querySelector('#compose .bar-title');
   if (ttl) ttl.textContent = editing ? '编辑动态' : '新动态';
   const pub = $('#composePublish');
@@ -3349,12 +3344,19 @@ function updateComposeCount() {
   renderComposeHL();
 }
 
-/* 输入区高亮层：@ 实时变蓝 */
+/* 输入区高亮层：从面板选中的 @ 立刻变蓝，手打的不变 */
 function renderComposeHL() {
   const ta = $('#composeText'), hl = $('#composeHL');
   if (!ta || !hl) return;
   const v = ta.value;
-  hl.innerHTML = v ? linkifyAt(v) + (v.endsWith('\n') ? '\u200b' : '') : '';
+  let html = linkifyAt(v);
+  pendingMentions.forEach(m => {
+    const token = '@' + esc(m.name);
+    const i = html.indexOf(token);
+    if (i < 0) return;
+    html = html.slice(0, i) + `<span class="at">${token}</span>` + html.slice(i + token.length);
+  });
+  hl.innerHTML = v ? html + (v.endsWith('\n') ? '\u200b' : '') : '';
   hl.scrollTop = ta.scrollTop;
 }
 
@@ -3419,7 +3421,7 @@ async function publishCompose() {
   if (composeEdit) {
     const p = S.posts.find(x => x.id === composeEdit);
     if (p) {
-      p.text = encodeMentions(t);
+      p.text = encodePending(t);
       p.images = keys;
       p.editedAt = Date.now();
     }
@@ -3429,7 +3431,7 @@ async function publishCompose() {
     toast('已保存');
     return;
   }
-  const post = { id: uid(), text: encodeMentions(t), ts: Date.now(), images: keys, likes: 0, liked: false, saved: false, comments: [] };
+  const post = { id: uid(), text: encodePending(t), ts: Date.now(), images: keys, likes: 0, liked: false, saved: false, comments: [] };
   if (composeRepost) post.repostOf = composeRepost;
   composeRepost = null;
   S.posts.push(post);
@@ -3672,7 +3674,9 @@ function openComments(id) {
 function insertMention(id) {
   const ta = $('#composeText');
   if (!ta) return;
-  const at = '@' + (id || 'qu') + ' ';
+  const name = (id || '').trim();
+  const at = '@' + (name || 'qu') + ' ';
+  pendingMentions.push({ kind: name === atName(S.me) ? 'me' : 'peer', name: name || 'qu' });
   const s = ta.selectionStart == null ? ta.value.length : ta.selectionStart;
   const e = ta.selectionEnd == null ? s : ta.selectionEnd;
   ta.value = ta.value.slice(0, s) + at + ta.value.slice(e);
@@ -3683,7 +3687,8 @@ function insertMention(id) {
 }
 
 function openMentionSheet() {
-  const people = [{ who: S.peer, tag: '对方' }, { who: S.me, tag: '我' }];
+  /* 只能 @ 对方，不能 @ 自己 */
+  const people = [{ who: S.peer, tag: '对方' }];
   const rows = people.map(({ who, tag }) => {
     const u = avatarUrl(who.avatar);
     /* 提及插入的是昵称 */
@@ -5757,22 +5762,6 @@ let S = null;
 
 const getPath = p => p.split('.').reduce((o, k) => (o == null ? undefined : o[k]), S);
 function setPath(p, v) {
-  /* 改昵称/账号时记下旧值，历史上的 @旧值 才能自动映射回来 */
-  if (p === 'peer.name' || p === 'me.name' || p === 'peer.id' || p === 'me.id') {
-    const isPeer = p.indexOf('peer.') === 0;
-    const isId = p.indexOf('.id') > 0;
-    const who = isPeer ? S.peer : S.me;
-    const oldVal = ((who && (isId ? who.id : who.name)) || '').trim();
-    const newVal = String(v || '').trim();
-    if (oldVal && oldVal !== newVal) {
-      if (!S.nameHistory) S.nameHistory = { peer: [], me: [] };
-      const key = isPeer ? 'peer' : 'me';
-      if (!Array.isArray(S.nameHistory[key])) S.nameHistory[key] = [];
-      const arr2 = S.nameHistory[key];
-      if (!arr2.includes(oldVal)) arr2.push(oldVal);
-      while (arr2.length > 20) arr2.shift();
-    }
-  }
   const parts = p.split('.');
   let o = S;
   for (let i = 0; i < parts.length - 1; i++) { o = o[parts[i]]; if (o == null) return; }
@@ -6692,7 +6681,6 @@ async function doImportSections(data, keys, mode){
     }
   }
   save();
-  try{ normalizeMentions(); }catch(e){}
   try{ applyTheme(); }catch(e){}
   try{ renderHome(); renderChats(); renderData(); armProactive(); armPeerPost(); }catch(e){}
   if(CUR && PAGE_RENDER[CUR]){ try{ PAGE_RENDER[CUR](); }catch(e){} }
@@ -6806,7 +6794,6 @@ async function resetAll() {
 
   /* 先让首帧稳定下来（布局/样式算完）再起动画，避免开场第一帧就抢主线程 */
   requestAnimationFrame(() => setTimeout(playIntro, 40));
-  setTimeout(normalizeMentions, 60);
   armProactive();
   armPeerPost();
 
@@ -6887,6 +6874,10 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
   const SEG = [[480,720,.32],[720,1080,.42],[1080,1320,.52],[1320,1440,.18]];
   const PLING = [.15,.20,.25,.12];
   const POLD = [.02,.03,.04,.03];
+  /* 按小时抽：每小时小概率来一下，时间分布才自然，不会抽完一段就停住 */
+  const H_START = 8, H_END = 24;
+  const P_LOOK_H = 0.10, P_LING_H = 0.05, P_OLD_H = 0.012;
+  const BLOCKS = [[8, 12], [12, 16], [16, 20], [20, 24]];
   function ensureEvents(key){
     const T = st(); if(!T) return [];
     if(key < T.since || key > todayKey()){ delete T.events[key]; return []; }
@@ -6897,45 +6888,59 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
     const base = dateOf(key).getTime();
     const now = new Date();
     const nowMin = isToday ? now.getHours()*60 + now.getMinutes() : 1440;
-    /* 哪些活跃段已经抽过了：今天按需补后面的段，历史日一次抽完 */
+    /* 已经抽过的小时 */
     let done = Array.isArray(T.evGen[key]) ? T.evGen[key].slice() : null;
     if(!done){
       if(isToday){
         done = [];
         list.forEach(e => {
-          const m = Math.floor((e.ts - base) / 60000);
-          SEG.forEach((s, i) => { if(m >= s[0] && m < s[1] && !done.includes(i)) done.push(i); });
+          const h = Math.floor((e.ts - base) / 60000 / 60);
+          if(h >= H_START && h < H_END && !done.includes(h)) done.push(h);
         });
       } else {
-        done = [0, 1, 2, 3];
+        done = [];
+        for(let h = H_START; h < H_END; h++) done.push(h);
       }
     }
     let added = false;
-    SEG.forEach((s, i) => {
-      if(done.includes(i)) return;
-      const start = s[0];
-      const end = Math.min(s[1], nowMin - 1);
-      if(start >= nowMin) return;
-      if(end - start < 20) return;
-      done.push(i);
+    const countType = t => list.filter(e => e.type === t).length;
+    for(let h = H_START; h < H_END; h++){
+      if(done.includes(h)) continue;
+      const s0 = h * 60, s1 = Math.min((h + 1) * 60, nowMin - 1);
+      if(s0 >= nowMin) break;
+      if(s1 - s0 < 15) continue;
+      done.push(h);
       added = true;
-      const n0 = list.length;
-      if(Math.random() < s[2]) list.push({id:nid(), type:'look', ts: base + rnd(start,end)*60000});
-      if(Math.random() < PLING[i]) list.push({id:nid(), type:'linger', ts: base + rnd(start,end)*60000,
-        mins: Math.round(rnd(2,18)), sec: Math.round(rnd(0,59)), where: Math.random()<.65?'聊天页':'动态页'});
-      if(Math.random() < POLD[i]) list.push({id:nid(), type:'old', ts: base + rnd(start,end)*60000,
-        days: Math.round(rnd(3,20)), screens: Math.round(rnd(3,12))});
-      /* 保底：这一段已经过去一小时以上、却什么都没抽中的话，补一条“看了动态”或“停留”，避免大半天空白 */
-      if(list.length === n0 && (end - start) >= 60 && Math.random() < 0.85){
-        const m = rnd(start + 10, end - 5);
-        if(Math.random() < 0.6){
-          list.push({id:nid(), type:'look', ts: base + m*60000});
-        } else {
-          list.push({id:nid(), type:'linger', ts: base + m*60000,
-            mins: Math.round(rnd(2,18)), sec: Math.round(rnd(0,59)), where: Math.random()<.65?'聊天页':'动态页'});
-        }
+      const at = () => base + rnd(s0 + 2, s1 - 1) * 60000;
+      if(countType('look') < 4 && Math.random() < P_LOOK_H){
+        list.push({id:nid(), type:'look', ts: at()});
       }
-    });
+      if(countType('linger') < 3 && Math.random() < P_LING_H){
+        list.push({id:nid(), type:'linger', ts: at(), mins: Math.round(rnd(2,18)),
+          sec: Math.round(rnd(0,59)), where: Math.random() < .65 ? '聊天页' : '动态页'});
+      }
+      if(countType('old') < 1 && Math.random() < P_OLD_H){
+        list.push({id:nid(), type:'old', ts: at(), days: Math.round(rnd(3,20)), screens: Math.round(rnd(3,12))});
+      }
+    }
+    /* 滑动窗口保底：最近 4 小时里一条生成事件都没有 → 补一条，任何时间打开都能看到新动静 */
+    if(nowMin > H_START * 60 + 30){
+      const from = Math.max(H_START * 60, nowMin - 240);
+      const recent = list.some(e => {
+        const m = (e.ts - base) / 60000;
+        return m >= from && m <= nowMin;
+      });
+      if(!recent && Math.random() < 0.92){
+        const m = rnd(from + 10, Math.max(from + 25, nowMin - 5));
+        if(Math.random() < 0.6){
+          list.push({id:nid(), type:'look', ts: base + m * 60000});
+        } else {
+          list.push({id:nid(), type:'linger', ts: base + m * 60000, mins: Math.round(rnd(2,18)),
+            sec: Math.round(rnd(0,59)), where: '聊天页'});
+        }
+        added = true;
+      }
+    }
     if(added || !Array.isArray(T.evGen[key])){
       T.evGen[key] = done;
       persist();
