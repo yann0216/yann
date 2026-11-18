@@ -3151,9 +3151,9 @@ const linkifyAt = s => {
   let out = esc(s);
   const A = atAliases();
   const cp = atName(S.peer), cm = atName(S.me);
-  /* 旧昵称、旧的 @对方 / @我 都先归一到内部标记 */
-  A.peer.forEach(n => { if (n && n !== cp) out = out.split('@' + esc(n)).join(AT_PEER); });
-  A.me.forEach(n => { if (n && n !== cm) out = out.split('@' + esc(n)).join(AT_ME); });
+  /* 旧昵称、当前昵称、旧的 @对方 / @我 都归一到内部标记 */
+  A.peer.forEach(n => { if (n) out = out.split('@' + esc(n)).join(AT_PEER); });
+  A.me.forEach(n => { if (n) out = out.split('@' + esc(n)).join(AT_ME); });
   out = out.split('@对方').join(AT_PEER).split('@我').join(AT_ME);
   return out
     .split(AT_PEER).join(`<span class="at">@${esc(cp)}</span>`)
