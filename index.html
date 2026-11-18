@@ -3132,9 +3132,10 @@ function encodeMentions(text) {
 }
 function atAliases() {
   const H = S.nameHistory || {};
+  const peerRemark = ((S.peer && S.peer.remark) || '').trim();
   return {
-    peer: [...(Array.isArray(H.peer) ? H.peer : []), atName(S.peer)],
-    me: [...(Array.isArray(H.me) ? H.me : []), atName(S.me)]
+    peer: [...(Array.isArray(H.peer) ? H.peer : []), peerRemark, atName(S.peer)].filter(Boolean),
+    me: [...(Array.isArray(H.me) ? H.me : []), atName(S.me)].filter(Boolean)
   };
 }
 function decodeMentions(text) {
