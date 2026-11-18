@@ -2797,7 +2797,7 @@ function lastLine() {
   const list = S.messages.filter(m => !m.recalled);
   const last = list[list.length - 1];
   if (!last) return '还没有消息';
-  const body = last.sticker ? '[表情]' : last.text;
+  const body = last.sticker ? '[表情]' : decodeMentions(last.text);
   if (last.role === 'system') return body;
   return (last.role === 'me' ? '我：' : '') + body;
 }
@@ -3116,7 +3116,31 @@ const IC_CHEV = '<svg class="chev" viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-
 const IC_REPOST = '<svg viewBox="0 0 24 24"><path d="M4 9.5A3.5 3.5 0 0 1 7.5 6H17"/><path d="M14.5 3.5L17.5 6l-3 2.5"/><path d="M20 14.5A3.5 3.5 0 0 1 16.5 18H7"/><path d="M9.5 20.5L6.5 18l3-2.5"/></svg>';
 const IC_ACC = '<svg viewBox="0 0 24 24"><circle cx="12" cy="8.6" r="3.5"/><path d="M5.6 19.4c.8-3.5 3.4-5.4 6.4-5.4s5.6 1.9 6.4 5.4"/></svg>';
 
-const linkifyAt = s => esc(s).replace(/@([\w\u00b2\u4e00-\u9fa5.\-]+)/g, '<span class="at">@$1</span>');
+/* @ 存的是固定标记（对方 / 我），屏幕上才换成当前昵称：改昵称后历史消息里的 @ 也跟着变 */
+const AT_PEER = '\u0001P\u0001';
+const AT_ME = '\u0001M\u0001';
+function encodeMentions(text) {
+  let t = String(text || '');
+  const pn = atName(S.peer), mn = atName(S.me);
+  if (pn) t = t.split('@' + pn).join(AT_PEER);
+  if (mn) t = t.split('@' + mn).join(AT_ME);
+  return t;
+}
+function decodeMentions(text) {
+  return String(text || '')
+    .split(AT_PEER).join('@' + atName(S.peer))
+    .split(AT_ME).join('@' + atName(S.me))
+    .replace(/@对方/g, '@' + atName(S.peer))
+    .replace(/@我/g, '@' + atName(S.me));
+}
+
+const linkifyAt = s => esc(s)
+  .replace(/\u0001P\u0001/g, '\u0002P\u0002')
+  .replace(/\u0001M\u0001/g, '\u0002M\u0002')
+  .replace(/@对方/g, '\u0002P\u0002')
+  .replace(/@我/g, '\u0002M\u0002')
+  .replace(/\u0002P\u0002/g, `<span class="at">@${esc(atName(S.peer))}</span>`)
+  .replace(/\u0002M\u0002/g, `<span class="at">@${esc(atName(S.me))}</span>`);
 
 /* 回复区：默认只显示前两条，点「查看全部」原地展开 */
 const expandedCmt = new Set();
@@ -3219,7 +3243,7 @@ PAGE_RENDER.compose = function () {
   const editing = composeEdit ? (S.posts || []).find(p => p.id === composeEdit) : null;
   composeImgs = editing ? (editing.images || []).map(k => MEDIA[k]).filter(Boolean) : [];
   const t = $('#composeText');
-  if (t) { t.value = editing ? (editing.text || '') : ''; t.placeholder = composeRepost ? '说点什么…' : '写点什么…'; }
+  if (t) { t.value = editing ? decodeMentions(editing.text || '') : ''; t.placeholder = composeRepost ? '说点什么…' : '写点什么…'; }
   const ttl = document.querySelector('#compose .bar-title');
   if (ttl) ttl.textContent = editing ? '编辑动态' : '新动态';
   const pub = $('#composePublish');
@@ -3323,7 +3347,7 @@ async function publishCompose() {
   if (composeEdit) {
     const p = S.posts.find(x => x.id === composeEdit);
     if (p) {
-      p.text = t;
+      p.text = encodeMentions(t);
       p.images = keys;
       p.editedAt = Date.now();
     }
@@ -3333,7 +3357,7 @@ async function publishCompose() {
     toast('已保存');
     return;
   }
-  const post = { id: uid(), text: t, ts: Date.now(), images: keys, likes: 0, liked: false, saved: false, comments: [] };
+  const post = { id: uid(), text: encodeMentions(t), ts: Date.now(), images: keys, likes: 0, liked: false, saved: false, comments: [] };
   if (composeRepost) post.repostOf = composeRepost;
   composeRepost = null;
   S.posts.push(post);
@@ -3426,7 +3450,7 @@ function peerMakePost() {
   const sep = ' ';
   let text = sampleCards(cards, n).map(c => c.text.replace(/[，,。.、…～~！!？?；;：:\s]+$/, '')).join(sep);
   if (S.settings.peerMentionOn && Math.random() * 100 < (S.settings.peerMentionRate || 0)) {
-    text += ' @' + ((S.me.name || '我').trim() || '我');
+    text += ' ' + AT_ME;
   }
   S.posts = S.posts || [];
   S.posts.push({ id: uid(), text, ts: Date.now(), images: [], likes: 0, liked: false, saved: false, comments: [], by: 'peer' });
@@ -4086,7 +4110,7 @@ function showMsgHint(text) {
   if (S.settings.hintOn === false) return;
   const el = document.getElementById('msgHint');
   if (!el) return;
-  const t = String(text || '').replace(/\s+/g, ' ').trim();
+  const t = decodeMentions(String(text || '')).replace(/\s+/g, ' ').trim();
   if (!t) return;
   el.querySelector('.lt').textContent = (peerLabel() || '对方') + '：' + (t.length > 22 ? t.slice(0, 22) + '…' : t);
   el.classList.remove('on');
@@ -6718,8 +6742,8 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
       case 'old': nm = `${esc(peerName())}翻到了 <b>${e.days} 天前</b>的聊天`; sub = `往回翻了 ${e.screens} 屏`; break;
       case 'online': nm = `${esc(peerName())}上线了`; sub = `离线 ${e.dur} 分钟`; break;
       case 'offline': nm = `${esc(peerName())}下线了`; sub = ''; break;
-      case 'post': nm = `${esc(peerName())}发了动态`; sub = esc((e.text||'').slice(0,20)); break;
-      case 'mypost': nm = `${esc(myName())}发了动态`; sub = esc((e.text||'').slice(0,20)); break;
+      case 'post': nm = `${esc(peerName())}发了动态`; sub = esc(decodeMentions((e.text||'').slice(0,20))); break;
+      case 'mypost': nm = `${esc(myName())}发了动态`; sub = esc(decodeMentions((e.text||'').slice(0,20))); break;
       case 'repost': nm = `${esc(peerName())}转发了你的动态`; sub = ''; break;
       case 'myrepost': nm = `${esc(myName())}转发了一条动态`; sub = ''; break;
       case 'peerlike': nm = `${esc(peerName())}赞了你的动态`; sub = ''; break;
