@@ -3138,6 +3138,21 @@ function atAliases() {
     me: [...(Array.isArray(H.me) ? H.me : []), atName(S.me)].filter(Boolean)
   };
 }
+/* 把历史动态里能认出来的 @旧名 永久改成内部标记：以后永远显示当前昵称、永远是蓝色 */
+function normalizeMentions() {
+  let changed = false;
+  const A = atAliases();
+  (S.posts || []).forEach(p => {
+    if (!p.text) return;
+    let t = p.text;
+    A.peer.forEach(n => { if (n) t = t.split('@' + n).join(AT_PEER); });
+    A.me.forEach(n => { if (n) t = t.split('@' + n).join(AT_ME); });
+    t = t.split('@对方').join(AT_PEER).split('@我').join(AT_ME);
+    if (t !== p.text) { p.text = t; changed = true; }
+  });
+  if (changed) save();
+}
+
 function decodeMentions(text) {
   let t = String(text || '');
   const A = atAliases();
@@ -6582,6 +6597,7 @@ async function resetAll() {
 
   /* 先让首帧稳定下来（布局/样式算完）再起动画，避免开场第一帧就抢主线程 */
   requestAnimationFrame(() => setTimeout(playIntro, 40));
+  setTimeout(normalizeMentions, 60);
   armProactive();
   armPeerPost();
 
