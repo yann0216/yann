@@ -1865,11 +1865,11 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   box-shadow:0 30px 70px -30px rgba(23,23,29,.55)}
 .cal-sheet.on{display:block;animation:calPop .22s cubic-bezier(.22,.72,.2,1) both}
 @keyframes calPop{from{opacity:0;transform:translate(-50%,-50%) scale(.94)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
-.cal-head{display:flex;align-items:center;gap:8px;padding:2px 42px 12px 4px}
+.cal-head{display:flex;align-items:center;gap:8px;padding:2px 4px 12px}
 .cal-title{font-size:16px;color:#2C2C32;font-weight:600}
 .cal-sub{font-size:10px;color:#B0B0B9;margin-top:2px}
-.cal-x{position:absolute;right:12px;top:12px;width:28px;height:28px;border-radius:50%;background:#F2F2F5;
-  display:grid;place-items:center;cursor:pointer}
+.cal-x{width:28px;height:28px;border-radius:50%;background:#F2F2F5;display:grid;place-items:center;
+  margin-left:2px;cursor:pointer}
 .cal-x svg{width:12px;height:12px;stroke:#8E8E98;fill:none;stroke-width:2.4;stroke-linecap:round}
 .cal-nav{width:28px;height:28px;border-radius:9px;background:#F2F2F5;display:grid;place-items:center;flex:0 0 auto;cursor:pointer}
 .cal-nav:first-of-type{margin-left:auto}
@@ -2819,6 +2819,13 @@ function whoName(who) {
   return (who === S.peer) ? peerLabel() : '我';
 }
 
+/* @ 后面统一用昵称（不是账号） */
+function atName(who) {
+  if (!who) return '对方';
+  if (who === S.peer) return (S.peer.name || '').trim() || peerLabel();
+  return (S.me.name || '我').trim() || '我';
+}
+
 /* 对方的账号：没填就是空，不显示账号栏 */
 function peerHandle() {
   return (S.peer && S.peer.id && S.peer.id !== 'qu') ? S.peer.id : '';
@@ -2909,8 +2916,7 @@ function profileCardHtml(kind) {
   const avInner = av ? '' : (kind === 'peer' ? faceSvg : ini);
   const avClass = 'av' + (av ? '' : (kind === 'peer' ? ' av-wechat' : ''));
   const savedN = (S.posts || []).filter(p => p.saved && (kind === 'peer' ? p.by === 'peer' : true)).length;
-  const atName = (kind === 'peer' ? peerHandle() : (who.id || '')).trim();
-  /* @ 后面是账号，没填就不显示这一行 */
+  const atName = (kind === 'peer' ? ((S.peer.name || '').trim() || peerLabel()) : ((S.me.name || '我').trim() || '我'));
   const handle = atName;
   return `<div class="brand" style="margin-top:10px">
     <div class="banner">${banner ? `<i style="background-image:url('${banner}')"></i>` : ''}</div>
@@ -3129,13 +3135,13 @@ function postCard(p) {
   };
   const src = p.repostOf ? resolveSrc(p.repostOf, 0) : null;
   const repost = p.repostOf ? `<div class="repost">${src ? `
-      <div class="repost-h"><b>${esc(src.by === 'peer' ? peerLabel() : S.me.name)}</b><span>${atSpan(src.by === 'peer' ? peerHandle() : (S.me.id || ''))}${postTime(src.ts)}</span></div>
+      <div class="repost-h"><b>${esc(src.by === 'peer' ? peerLabel() : S.me.name)}</b><span>${atSpan(atName(src.by === 'peer' ? S.peer : S.me))}${postTime(src.ts)}</span></div>
       ${src.text ? `<div class="repost-t">${esc(src.text)}</div>` : ''}
       ${(src.images || []).filter(k => MEDIA[k]).slice(0, 1).map(k => `<img class="repost-img" src="${MEDIA[k]}" alt="">`).join('')}` : `<div class="repost-t" style="color:#9A9AA4">原动态已删除</div>`}</div>` : '';
   return `<div class="post${p.repostOf ? ' rp-card' : ''}">
     <div class="post-head">
       <div class="post-av"${mine ? '' : ` data-peek="peer" title="查看主页"`}${meAv ? ` style="background-image:url('${meAv}')"` : ''}>${meAv ? '' : esc(((whoName(who) || '·').trim().slice(0, 1)) || '·')}</div>
-      <div class="post-by"><b>${esc(whoName(who))}</b>${p.repostOf ? `<span class="rp-pill">${IC_REPOST}转发</span>` : ''}<span>${atSpan(whoId)}${postTime(p.ts)}</span></div>
+      <div class="post-by"><b>${esc(whoName(who))}</b>${p.repostOf ? `<span class="rp-pill">${IC_REPOST}转发</span>` : ''}<span>${atSpan(atName(who))}${postTime(p.ts)}</span></div>
       ${mine ? `<div class="post-menu-wrap">
         <button class="post-dots" data-dots="${p.id}" aria-label="更多"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18" cy="12" r="1.7"/></svg></button>
         <div class="post-menu" data-menu="${p.id}">
@@ -3168,7 +3174,7 @@ function postCard(p) {
         <div class="rep-row" data-rcmt="${c.id}" data-rpost="${p.id}">
           <div class="rep-av${c.by === 'peer' ? ' rep-av-tap' : ''}"${c.by === 'peer' ? ' data-repav="1"' : ''}${wav ? ` style="background-image:url('${wav}')"` : ''}>${wav ? '' : esc(((whoName(who) || '·').trim().slice(0, 1)) || '·')}</div>
           <div class="rep-main">
-            <div class="rep-head"><b>${esc(whoName(who))}</b><span>${atSpan(c.by === 'peer' ? peerHandle() : (who.id || ''))}${postTime(c.ts)}</span></div>
+            <div class="rep-head"><b>${esc(whoName(who))}</b><span>${atSpan(atName(who))}${postTime(c.ts)}</span></div>
             ${qText ? `<div class="rep-quote"><b>${esc(qName)}</b>${esc(qText)}</div>` : ''}
             <div class="rep-text">${linkifyAt(c.text)}</div>
           </div>
@@ -3196,7 +3202,7 @@ function renderComposeRepost() {
   if (!src) { composeRepost = null; box.innerHTML = ''; return; }
   const isPeer = src.by === 'peer';
   box.innerHTML = `<div class="cr-card">
-      <div class="cr-h"><b>${esc(isPeer ? peerLabel() : S.me.name)}</b><span>${atSpan(isPeer ? peerHandle() : (S.me.id || ''))}<em class="rp-pill">${IC_REPOST}转发</em>${postTime(src.ts)}</span></div>
+      <div class="cr-h"><b>${esc(isPeer ? peerLabel() : S.me.name)}</b><span>${atSpan(atName(isPeer ? S.peer : S.me))}<em class="rp-pill">${IC_REPOST}转发</em>${postTime(src.ts)}</span></div>
       ${src.text ? `<div class="cr-t">${esc(src.text)}</div>` : ''}
       ${(src.images || []).filter(k => MEDIA[k]).slice(0, 1).map(k => `<img class="repost-img" src="${MEDIA[k]}" alt="">`).join('')}
       <button class="cr-x" id="composeRepostX" aria-label="取消转发">×</button>
@@ -3416,7 +3422,7 @@ function peerMakePost() {
   const sep = ' ';
   let text = sampleCards(cards, n).map(c => c.text.replace(/[，,。.、…～~！!？?；;：:\s]+$/, '')).join(sep);
   if (S.settings.peerMentionOn && Math.random() * 100 < (S.settings.peerMentionRate || 0)) {
-    text += ' @' + (S.me.id || S.me.name || '我');
+    text += ' @' + ((S.me.name || '我').trim() || '我');
   }
   S.posts = S.posts || [];
   S.posts.push({ id: uid(), text, ts: Date.now(), images: [], likes: 0, liked: false, saved: false, comments: [], by: 'peer' });
@@ -3580,9 +3586,9 @@ function openMentionSheet() {
   const people = [{ who: S.peer, tag: '对方' }, { who: S.me, tag: '我' }];
   const rows = people.map(({ who, tag }) => {
     const u = avatarUrl(who.avatar);
-    /* 提及插的是账号，不是备注 */
-    const disp = (who === S.peer) ? peerLabel() : (who.name || '我');
-    const atId = (who.id || '').trim() || disp;
+    /* 提及插入的是昵称 */
+    const disp = atName(who);
+    const atId = disp;
     const ini = esc(((disp || '·').trim().slice(0, 1)) || '·');
     return `<div class="at-row" data-at="${esc(atId)}">
       <div class="at-av"${u ? ` style="background-image:url('${u}')"` : ''}>${u ? '' : ini}</div>
@@ -6687,15 +6693,14 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
   }
 
   /* ---------- 渲染 ---------- */
-  /* 前缀名：统一走 peerLabel（备注 > 昵称），我这边用自己的昵称 */
+  /* 前缀名：对方用备注（无备注则昵称），我这边固定写「我」 */
   function peerName(){
     if(typeof peerLabel === 'function') return peerLabel();
     const p = S.peer || {};
     return (p.remark || p.name || '对方').trim() || '对方';
   }
   function myName(){
-    const m = S.me || {};
-    return (m.name || '我').trim() || '我';
+    return '我';
   }
 
   function rowHtml(e){
