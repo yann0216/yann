@@ -3168,9 +3168,11 @@ function encodeMentions(text) {
 function atAliases() {
   const H = S.nameHistory || {};
   const peerRemark = ((S.peer && S.peer.remark) || '').trim();
+  const peerId = ((S.peer && S.peer.id) || '').trim();
+  const meId = ((S.me && S.me.id) || '').trim();
   return {
-    peer: [...(Array.isArray(H.peer) ? H.peer : []), peerRemark, atName(S.peer)].filter(Boolean),
-    me: [...(Array.isArray(H.me) ? H.me : []), atName(S.me)].filter(Boolean)
+    peer: [...(Array.isArray(H.peer) ? H.peer : []), peerRemark, peerId, atName(S.peer)].filter(Boolean),
+    me: [...(Array.isArray(H.me) ? H.me : []), meId, atName(S.me)].filter(Boolean)
   };
 }
 /* 把历史动态里能认出来的 @旧名 永久改成内部标记：以后永远显示当前昵称、永远是蓝色 */
@@ -3183,8 +3185,7 @@ function normalizeMentions() {
     A.peer.forEach(n => { if (n) t = t.split('@' + n).join(AT_PEER); });
     A.me.forEach(n => { if (n) t = t.split('@' + n).join(AT_ME); });
     t = t.split('@对方').join(AT_PEER).split('@我').join(AT_ME);
-    /* 剩下的 @xxx 也归到对方：只有你们两个人，历史上 @ 的一定是彼此 */
-    t = t.replace(/@[^\s@]+/g, AT_PEER);
+    /* 无法识别的不动：宁可不变蓝，也不能把“@我”错认成对方 */
     if (t !== p.text) { p.text = t; changed = true; }
   });
   if (changed) save();
@@ -5756,17 +5757,19 @@ let S = null;
 
 const getPath = p => p.split('.').reduce((o, k) => (o == null ? undefined : o[k]), S);
 function setPath(p, v) {
-  /* 改昵称时记下旧名，历史上的 @旧名 才能自动映射到新昵称 */
-  if (p === 'peer.name' || p === 'me.name') {
-    const who = p === 'peer.name' ? S.peer : S.me;
-    const oldName = ((who && who.name) || '').trim();
-    const newName = String(v || '').trim();
-    if (oldName && oldName !== newName) {
+  /* 改昵称/账号时记下旧值，历史上的 @旧值 才能自动映射回来 */
+  if (p === 'peer.name' || p === 'me.name' || p === 'peer.id' || p === 'me.id') {
+    const isPeer = p.indexOf('peer.') === 0;
+    const isId = p.indexOf('.id') > 0;
+    const who = isPeer ? S.peer : S.me;
+    const oldVal = ((who && (isId ? who.id : who.name)) || '').trim();
+    const newVal = String(v || '').trim();
+    if (oldVal && oldVal !== newVal) {
       if (!S.nameHistory) S.nameHistory = { peer: [], me: [] };
-      const list = p === 'peer.name' ? S.nameHistory.peer : S.nameHistory.me;
-      if (!Array.isArray(list)) S.nameHistory[p === 'peer.name' ? 'peer' : 'me'] = [];
-      const arr2 = p === 'peer.name' ? S.nameHistory.peer : S.nameHistory.me;
-      if (!arr2.includes(oldName)) arr2.push(oldName);
+      const key = isPeer ? 'peer' : 'me';
+      if (!Array.isArray(S.nameHistory[key])) S.nameHistory[key] = [];
+      const arr2 = S.nameHistory[key];
+      if (!arr2.includes(oldVal)) arr2.push(oldVal);
       while (arr2.length > 20) arr2.shift();
     }
   }
