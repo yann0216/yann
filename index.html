@@ -2341,7 +2341,8 @@ function defaultState() {
     lastSeen: 0,
     cards: [],
     messages: [],
-    timeline: { events: {}, presence: {}, days: {} }
+    timeline: { events: {}, presence: {}, days: {} },
+    nameHistory: { peer: [], me: [] }
   };
 }
 
@@ -2390,6 +2391,9 @@ function migrate(raw) {
   if(!s.timeline.events) s.timeline.events = {};
   if(!s.timeline.presence) s.timeline.presence = {};
   if(!s.timeline.days) s.timeline.days = {};
+  s.nameHistory = Object.assign({ peer:[], me:[] }, raw.nameHistory || {});
+  if(!Array.isArray(s.nameHistory.peer)) s.nameHistory.peer = [];
+  if(!Array.isArray(s.nameHistory.me)) s.nameHistory.me = [];
   s.v = 3;
   return s;
 }
@@ -3126,21 +3130,35 @@ function encodeMentions(text) {
   if (mn) t = t.split('@' + mn).join(AT_ME);
   return t;
 }
+function atAliases() {
+  const H = S.nameHistory || {};
+  return {
+    peer: [...(Array.isArray(H.peer) ? H.peer : []), atName(S.peer)],
+    me: [...(Array.isArray(H.me) ? H.me : []), atName(S.me)]
+  };
+}
 function decodeMentions(text) {
-  return String(text || '')
-    .split(AT_PEER).join('@' + atName(S.peer))
-    .split(AT_ME).join('@' + atName(S.me))
-    .replace(/@对方/g, '@' + atName(S.peer))
-    .replace(/@我/g, '@' + atName(S.me));
+  let t = String(text || '');
+  const A = atAliases();
+  const cp = atName(S.peer), cm = atName(S.me);
+  A.peer.forEach(n => { if (n && n !== cp) t = t.split('@' + n).join(AT_PEER); });
+  A.me.forEach(n => { if (n && n !== cm) t = t.split('@' + n).join(AT_ME); });
+  t = t.split('@对方').join(AT_PEER).split('@我').join(AT_ME);
+  return t.split(AT_PEER).join('@' + cp).split(AT_ME).join('@' + cm);
 }
 
-const linkifyAt = s => esc(s)
-  .replace(/\u0001P\u0001/g, '\u0002P\u0002')
-  .replace(/\u0001M\u0001/g, '\u0002M\u0002')
-  .replace(/@对方/g, '\u0002P\u0002')
-  .replace(/@我/g, '\u0002M\u0002')
-  .replace(/\u0002P\u0002/g, `<span class="at">@${esc(atName(S.peer))}</span>`)
-  .replace(/\u0002M\u0002/g, `<span class="at">@${esc(atName(S.me))}</span>`);
+const linkifyAt = s => {
+  let out = esc(s);
+  const A = atAliases();
+  const cp = atName(S.peer), cm = atName(S.me);
+  /* 旧昵称、旧的 @对方 / @我 都先归一到内部标记 */
+  A.peer.forEach(n => { if (n && n !== cp) out = out.split('@' + esc(n)).join(AT_PEER); });
+  A.me.forEach(n => { if (n && n !== cm) out = out.split('@' + esc(n)).join(AT_ME); });
+  out = out.split('@对方').join(AT_PEER).split('@我').join(AT_ME);
+  return out
+    .split(AT_PEER).join(`<span class="at">@${esc(cp)}</span>`)
+    .split(AT_ME).join(`<span class="at">@${esc(cm)}</span>`);
+};
 
 /* 回复区：默认只显示前两条，点「查看全部」原地展开 */
 const expandedCmt = new Set();
@@ -5685,6 +5703,20 @@ let S = null;
 
 const getPath = p => p.split('.').reduce((o, k) => (o == null ? undefined : o[k]), S);
 function setPath(p, v) {
+  /* 改昵称时记下旧名，历史上的 @旧名 才能自动映射到新昵称 */
+  if (p === 'peer.name' || p === 'me.name') {
+    const who = p === 'peer.name' ? S.peer : S.me;
+    const oldName = ((who && who.name) || '').trim();
+    const newName = String(v || '').trim();
+    if (oldName && oldName !== newName) {
+      if (!S.nameHistory) S.nameHistory = { peer: [], me: [] };
+      const list = p === 'peer.name' ? S.nameHistory.peer : S.nameHistory.me;
+      if (!Array.isArray(list)) S.nameHistory[p === 'peer.name' ? 'peer' : 'me'] = [];
+      const arr2 = p === 'peer.name' ? S.nameHistory.peer : S.nameHistory.me;
+      if (!arr2.includes(oldName)) arr2.push(oldName);
+      while (arr2.length > 20) arr2.shift();
+    }
+  }
   const parts = p.split('.');
   let o = S;
   for (let i = 0; i < parts.length - 1; i++) { o = o[parts[i]]; if (o == null) return; }
