@@ -1237,6 +1237,41 @@ html,body,.bub,.row.you .bub,.row.me .bub,.tt-title,.row-name,.si-name,.peer-nam
   font-size:14px;flex:0 0 auto;background-size:cover;background-position:center}
 .at-nm{font-size:14.5px;color:#5C5C66}
 .at-id{font-size:12px;color:#9A9AA4;margin-top:2px}
+/* 分区勾选行（导出 / 导入） */
+.sec-row{display:flex;align-items:center;gap:10px;padding:6px 13px;border-top:1px solid #F4F4F7;cursor:pointer}
+.sec-row:first-child{border-top:none}
+.sec-ck{width:18px;height:18px;border-radius:6px;box-shadow:inset 0 0 0 1.6px #D5D5DA;flex:0 0 auto;position:relative}
+.sec-ck.on{background:#6E6E78;box-shadow:none}
+.sec-ck.on::after{content:'';position:absolute;left:6px;top:3.4px;width:4.4px;height:8px;
+  border-right:1.8px solid #FFF;border-bottom:1.8px solid #FFF;transform:rotate(40deg)}
+.sec-ck.part{background:#E9E9EF;box-shadow:none}
+.sec-ck.part::after{content:'';position:absolute;left:5px;top:8px;width:8px;height:1.8px;background:#8E8E98;border-radius:1px}
+.sec-tx{flex:1;min-width:0}
+.sec-tx b{display:block;font-size:12.5px;color:#2C2C32}
+.sec-tx span{display:block;font-size:10px;color:#B0B0B9;margin-top:2px}
+.sec-n{font-size:9.5px;color:#C2C2CC;flex:0 0 auto}
+.sec-all{display:flex;align-items:center;gap:8px;padding:11px 12px;font-size:11px;color:#8E8E98;cursor:pointer}
+.sec-mode{display:flex;gap:2px;background:#F2F2F5;border-radius:11px;padding:3px;margin:10px 2px 2px}
+.sec-mode button{flex:1;border:none;background:none;font-family:inherit;font-weight:700;font-size:11.5px;
+  color:#9A9AA4;padding:8px 0;border-radius:9px;cursor:pointer}
+.sec-mode button.on{background:#FFFFFF;color:#2C2C32;box-shadow:0 1px 3px rgba(23,23,29,.1)}
+.sec-list{max-height:72vh;overflow-y:auto;background:transparent;padding:0}
+.sec-head{display:flex;align-items:flex-start;gap:8px;padding:2px 4px 10px}
+.sec-head b{display:block;font-size:16px;color:#2C2C32;font-weight:600}
+.sec-head span{display:block;font-size:10px;color:#B0B0B9;margin-top:3px}
+.sec-pill{margin-left:auto;font-size:10.5px;color:#5C5C66;background:#F2F2F5;border-radius:999px;
+  padding:6px 12px;cursor:pointer;flex:0 0 auto}
+.sec-grp{font-size:9px;color:#C2C2CC;letter-spacing:.08em;padding:7px 6px 5px}
+.sec-card{background:#FFFFFF;border-radius:14px;overflow:hidden;box-shadow:inset 0 0 0 1px #F1F1F5}
+.sec-do{width:100%;height:46px;border-radius:14px;background:#6E6E78;color:#FFFFFF;
+  font-family:inherit;font-weight:700;font-size:13.5px;margin-top:12px;cursor:pointer}
+/* 备份面板用居中悬浮窗 */
+.sheet.center.sec-sheet{width:min(374px,calc(100% - 28px));border-radius:22px;padding:16px 14px 14px;
+  max-height:92vh;box-shadow:0 30px 70px -30px rgba(23,23,29,.55)}
+.sheet.center.sec-sheet .sec-do{margin-top:12px}
+.sheet.center.sec-sheet .m-row.cancel{background:#F2F2F5;border-radius:12px;margin-top:8px;height:42px;
+  font-size:13px;color:#5C5C66!important;justify-content:center}
+.sheet.center.sec-sheet .sec-list{max-height:68vh}
 /* 账号前面用一条细竖线分隔，不用图标 */
 .acc-sep{display:inline-block;width:1px;height:9px;background:#DDDDE4;vertical-align:-1px;margin:0 5px}
 .post-meta{display:flex;align-items:center;gap:12px;margin-top:9px;font-size:11.5px;color:var(--text-3)}
@@ -3148,6 +3183,8 @@ function normalizeMentions() {
     A.peer.forEach(n => { if (n) t = t.split('@' + n).join(AT_PEER); });
     A.me.forEach(n => { if (n) t = t.split('@' + n).join(AT_ME); });
     t = t.split('@对方').join(AT_PEER).split('@我').join(AT_ME);
+    /* 剩下的 @xxx 也归到对方：只有你们两个人，历史上 @ 的一定是彼此 */
+    t = t.replace(/@[^\s@]+/g, AT_PEER);
     if (t !== p.text) { p.text = t; changed = true; }
   });
   if (changed) save();
@@ -6430,8 +6467,8 @@ function renderData() {
     </div>
     <div class="sec"><div class="sec-title">备份</div>
       <div class="data-card">
-        <div class="data-row" data-act="exportAll"><div class="ico">${DI.out}</div><div class="txt">导出全部备份<small>聊天 · 字卡 · 设置 · 图片音效</small></div></div>
-        <div class="data-row" data-act="importAll"><div class="ico">${DI.in}</div><div class="txt">导入全部备份<small>会覆盖当前所有内容</small></div></div>
+        <div class="data-row" data-act="exportAll"><div class="ico">${DI.out}</div><div class="txt">导出备份<small>可选分区 · 只导出需要的那部分</small></div></div>
+        <div class="data-row" data-act="importAll"><div class="ico">${DI.in}</div><div class="txt">导入备份<small>可选分区 · 可合并或覆盖</small></div></div>
       </div>
     </div>
     <div class="sec"><div class="sec-title">字卡</div>
@@ -6470,14 +6507,195 @@ function bindData() {
   });
 }
 
-async function exportAll() {
-  toast('正在打包…');
-  const media = {};
-  try { Object.assign(media, await Media.all()); } catch (e) { }
-  const payload = { app: 'yann', v: 3, at: Date.now(), state: S, media };
-  downloadText(`yann²备份-${stamp()}.json`, JSON.stringify(payload), 'application/json');
-  setTimeout(() => toast('备份已导出'), 400);
+/* ================= 分区导出 / 导入 ================= */
+const SECTION_DEFS = [
+  { k:'chat',  g:'对话', name:'聊天记录',       desc:'消息 · 已读 · 通话记录',            n:()=>`${(S.messages||[]).length} 条` },
+  { k:'post',  g:'对话', name:'动态与评论',     desc:'帖子 · 点赞 · 收藏 · 评论',        n:()=>`${(S.posts||[]).length} 条` },
+  { k:'deck',  g:'内容', name:'字卡与分组',     desc:'字卡文本 · 分组 · 隐藏',          n:()=>`${(S.cards||[]).length} 张` },
+  { k:'stick', g:'内容', name:'表情包',         desc:'表情图片与排序',                  n:()=>`${(S.stickers||[]).length} 个` },
+  { k:'me',    g:'身份与偏好', name:'我的资料', desc:'头像 · 昵称 · 备注 · 账号 · 背景', n:()=>'' },
+  { k:'set',   g:'身份与偏好', name:'设置',     desc:'开关 · 概率 · 外观',                n:()=>'' },
+  { k:'tl',    g:'身份与偏好', name:'时间轴与重要日子', desc:'生成记录 · 离线表 · 重要日子', n:()=>`${Object.keys((S.timeline&&S.timeline.days)||{}).length} 个` },
+  { k:'media', g:'附件', name:'图片与音效',     desc:'聊天图片 · 表情 · 头像 · 音效',    n:()=>'按需' }
+];
+
+async function exportAll(){ openSectionSheet('out'); }
+
+function openSectionSheet(mode, data){
+  const allKeys = SECTION_DEFS.map(d=>d.k);
+  const chosen = new Set(mode === 'in'
+    ? (Array.isArray(data && data.sections) ? data.sections.filter(k=>allKeys.includes(k)) : allKeys)
+    : allKeys);
+  let mergeMode = 'merge';
+  const groups = [...new Set(SECTION_DEFS.map(d => d.g))];
+  const listHtml = groups.map(g => `
+    <div class="sec-grp">${g}</div>
+    <div class="sec-card">${SECTION_DEFS.filter(d => d.g === g).map(d => `
+      <div class="sec-row" data-k="${d.k}">
+        <i class="sec-ck${chosen.has(d.k) ? ' on' : ''}"></i>
+        <div class="sec-tx"><b>${d.name}</b><span>${d.desc}</span></div>
+        <div class="sec-n">${d.n()}</div>
+      </div>`).join('')}</div>`).join('');
+  const modeHtml = mode === 'in' ? `
+    <div class="sec-mode">
+      <button class="on" data-m="merge">合并到现有</button>
+      <button data-m="replace">完全覆盖</button>
+    </div>` : '';
+  openSheet(`
+    <div class="sec-head">
+      <div><b>${mode === 'out' ? '导出备份' : '导入备份'}</b>
+        <span>${mode === 'out' ? '选择要保存的部分，只导出需要的那些' : '选择要导入的部分'}</span></div>
+      <div class="sec-pill" data-all><span data-alltxt>取消全选</span></div>
+    </div>
+    <div class="sec-list">${listHtml}</div>
+    ${modeHtml}
+    <button class="sec-do" data-do="1">${mode === 'out' ? '导出备份' : '开始导入'}</button>
+    <button class="m-row cancel" data-do="0">取消</button>`, el => {
+    const list = el.querySelectorAll('.sec-row');
+    el.classList.add('sec-sheet');
+    const allTxt = el.querySelector('[data-alltxt]');
+    const refresh = () => {
+      const on = [...list].filter(r => r.querySelector('.sec-ck').classList.contains('on')).length;
+      const total = SECTION_DEFS.length;
+      allTxt.textContent = on === total ? '取消全选' : '全部选中';
+    };
+    el.addEventListener('click', async e => {
+      const row = e.target.closest('.sec-row');
+      if(row){ row.querySelector('.sec-ck').classList.toggle('on'); refresh(); return; }
+      if(e.target.closest('[data-all]')){
+        const on = [...list].filter(r => r.querySelector('.sec-ck').classList.contains('on')).length;
+        const isAll = on === list.length;
+        list.forEach(r => r.querySelector('.sec-ck').classList.toggle('on', !isAll));
+        refresh(); return;
+      }
+      const mb = e.target.closest('[data-m]');
+      if(mb){
+        mergeMode = mb.dataset.m;
+        el.querySelectorAll('[data-m]').forEach(b=>b.classList.toggle('on', b === mb));
+        return;
+      }
+      const go = e.target.closest('[data-do]');
+      if(!go) return;
+      if(go.dataset.do === '0'){ closeSheet(); return; }
+      const keys = [...list].filter(r=>r.querySelector('.sec-ck').classList.contains('on')).map(r=>r.dataset.k);
+      if(!keys.length){ toast('至少选一个'); return; }
+      closeSheet();
+      if(mode === 'out') await doExportSections(keys);
+      else await doImportSections(data, keys, mergeMode);
+    });
+    refresh();
+  }, 'center');
 }
+
+async function doExportSections(keys){
+  toast('正在打包…');
+  const state = {};
+  if(keys.includes('chat')){ state.messages = S.messages; state.lastSeen = S.lastSeen; }
+  if(keys.includes('post')) state.posts = S.posts;
+  if(keys.includes('deck')){ state.cards = S.cards; state.cats = S.cats; }
+  if(keys.includes('stick')) state.stickers = S.stickers;
+  if(keys.includes('me')){ state.me = S.me; state.peer = S.peer; state.countdown = S.countdown; }
+  if(keys.includes('set')) state.settings = S.settings;
+  if(keys.includes('tl')) state.timeline = S.timeline;
+  let media = {};
+  if(keys.includes('media')){ try{ media = await Media.all(); }catch(e){} }
+  const payload = { app:'yann', v:3, at:Date.now(), sections:keys, state, media };
+  downloadText(`yann²备份-${stamp()}.json`, JSON.stringify(payload), 'application/json');
+  setTimeout(()=>toast('备份已导出'), 400);
+}
+
+function mergeById(cur, add){
+  const out = Array.isArray(cur) ? cur.slice() : [];
+  (add || []).forEach(x=>{
+    if(!x) return;
+    const i = out.findIndex(y=>y && y.id && x.id && y.id === x.id);
+    if(i >= 0) out[i] = x; else out.push(x);
+  });
+  return out;
+}
+
+async function doImportSections(data, keys, mode){
+  const inc = (data && data.state) || {};
+  /* 聊天 */
+  if(keys.includes('chat') && Array.isArray(inc.messages)){
+    if(mode === 'replace'){
+      S.messages = inc.messages.slice();
+      S.lastSeen = inc.lastSeen || 0;
+    } else {
+      S.messages = mergeById(S.messages, inc.messages).sort((a,b)=>a.ts-b.ts);
+      S.lastSeen = Math.max(S.lastSeen || 0, inc.lastSeen || 0);
+    }
+  }
+  /* 动态 */
+  if(keys.includes('post') && Array.isArray(inc.posts)){
+    if(mode === 'replace'){
+      S.posts = inc.posts.slice();
+    } else {
+      const merged = mergeById(S.posts, inc.posts);
+      merged.forEach(p=>{
+        const q = (inc.posts || []).find(x=>x.id === p.id);
+        if(!q) return;
+        p.likes = Math.max(p.likes || 0, q.likes || 0);
+        if(Array.isArray(q.comments)) p.comments = mergeById(p.comments || [], q.comments);
+      });
+      S.posts = merged;
+    }
+  }
+  /* 字卡 */
+  if(keys.includes('deck')){
+    if(Array.isArray(inc.cards)) S.cards = mode === 'replace' ? inc.cards.slice() : mergeById(S.cards, inc.cards);
+    if(Array.isArray(inc.cats)){
+      if(mode === 'replace') S.cats = inc.cats.slice();
+      else {
+        S.cats = Array.isArray(S.cats) ? S.cats : [];
+        inc.cats.forEach(c=>{ if(c && !S.cats.some(x=>x.name === c.name)) S.cats.push(c); });
+      }
+    }
+  }
+  /* 表情 */
+  if(keys.includes('stick') && Array.isArray(inc.stickers)){
+    S.stickers = mode === 'replace' ? inc.stickers.slice() : mergeById(S.stickers, inc.stickers);
+  }
+  /* 资料（没有合并概念，整体覆盖） */
+  if(keys.includes('me')){
+    if(inc.me) S.me = Object.assign({}, S.me, inc.me);
+    if(inc.peer) S.peer = Object.assign({}, S.peer, inc.peer);
+    if(inc.countdown) S.countdown = Object.assign({}, S.countdown, inc.countdown);
+  }
+  /* 设置 */
+  if(keys.includes('set') && inc.settings){
+    S.settings = Object.assign({}, S.settings, inc.settings);
+  }
+  /* 时间轴：按天覆盖 */
+  if(keys.includes('tl') && inc.timeline){
+    if(!S.timeline) S.timeline = { events:{}, presence:{}, days:{} };
+    const T = S.timeline;
+    if(mode === 'replace'){
+      T.events = inc.timeline.events || {};
+      T.presence = inc.timeline.presence || {};
+      T.days = inc.timeline.days || {};
+    } else {
+      Object.assign(T.events || (T.events = {}), inc.timeline.events || {});
+      Object.assign(T.presence || (T.presence = {}), inc.timeline.presence || {});
+      Object.assign(T.days || (T.days = {}), inc.timeline.days || {});
+    }
+    if(inc.timeline.since) T.since = T.since ? (T.since < inc.timeline.since ? T.since : inc.timeline.since) : inc.timeline.since;
+  }
+  /* 媒体 */
+  if(keys.includes('media') && data.media && typeof data.media === 'object'){
+    for(const k in data.media){
+      MEDIA[k] = data.media[k];
+      try{ await Media.set(k, data.media[k]); }catch(e){}
+    }
+  }
+  save();
+  try{ normalizeMentions(); }catch(e){}
+  try{ applyTheme(); }catch(e){}
+  try{ renderHome(); renderChats(); renderData(); armProactive(); armPeerPost(); }catch(e){}
+  if(CUR && PAGE_RENDER[CUR]){ try{ PAGE_RENDER[CUR](); }catch(e){} }
+  toast(mode === 'replace' ? '已覆盖导入' : '已合并导入');
+}
+
 
 async function importAll() {
   const f = await pickFile('.json,application/json');
@@ -6485,19 +6703,7 @@ async function importAll() {
   let data = null;
   try { data = JSON.parse(await f.text()); } catch (e) { return toast('文件读取失败'); }
   if (!data || !data.state) return toast('不是有效的备份文件');
-  if (!await uiConfirm('导入会覆盖当前全部数据', '', '导入', true, 'warn')) return;
-  S = migrate(data.state);
-  save();
-  if (data.media && typeof data.media === 'object') {
-    for (const k in data.media) {
-      MEDIA[k] = data.media[k];
-      try { await Media.set(k, data.media[k]); } catch (e) { }
-    }
-  }
-  applyTheme();
-  if (CUR && PAGE_RENDER[CUR]) PAGE_RENDER[CUR]();
-  renderHome(); armProactive(); armPeerPost(); renderData();
-  toast('已导入备份');
+  openSectionSheet('in', data);
 }
 
 async function resetAll() {
@@ -6681,23 +6887,56 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
   function ensureEvents(key){
     const T = st(); if(!T) return [];
     if(key < T.since || key > todayKey()){ delete T.events[key]; return []; }
-    if(T.events[key]) return T.events[key];
-    const base = dateOf(key).getTime();
     const isToday = key === todayKey();
+    if(!Array.isArray(T.events[key])) T.events[key] = [];
+    if(!T.evGen) T.evGen = {};
+    const list = T.events[key];
+    const base = dateOf(key).getTime();
     const now = new Date();
     const nowMin = isToday ? now.getHours()*60 + now.getMinutes() : 1440;
-    const list = [];
-    SEG.forEach((s,i) => {
-      const start = s[0], end = Math.min(s[1], nowMin - 1);
+    /* 哪些活跃段已经抽过了：今天按需补后面的段，历史日一次抽完 */
+    let done = Array.isArray(T.evGen[key]) ? T.evGen[key].slice() : null;
+    if(!done){
+      if(isToday){
+        done = [];
+        list.forEach(e => {
+          const m = Math.floor((e.ts - base) / 60000);
+          SEG.forEach((s, i) => { if(m >= s[0] && m < s[1] && !done.includes(i)) done.push(i); });
+        });
+      } else {
+        done = [0, 1, 2, 3];
+      }
+    }
+    let added = false;
+    SEG.forEach((s, i) => {
+      if(done.includes(i)) return;
+      const start = s[0];
+      const end = Math.min(s[1], nowMin - 1);
+      if(start >= nowMin) return;
       if(end - start < 20) return;
+      done.push(i);
+      added = true;
+      const n0 = list.length;
       if(Math.random() < s[2]) list.push({id:nid(), type:'look', ts: base + rnd(start,end)*60000});
       if(Math.random() < PLING[i]) list.push({id:nid(), type:'linger', ts: base + rnd(start,end)*60000,
         mins: Math.round(rnd(2,18)), sec: Math.round(rnd(0,59)), where: Math.random()<.65?'聊天页':'动态页'});
       if(Math.random() < POLD[i]) list.push({id:nid(), type:'old', ts: base + rnd(start,end)*60000,
         days: Math.round(rnd(3,20)), screens: Math.round(rnd(3,12))});
+      /* 保底：这一段已经过去一小时以上、却什么都没抽中的话，补一条“看了动态”或“停留”，避免大半天空白 */
+      if(list.length === n0 && (end - start) >= 60 && Math.random() < 0.85){
+        const m = rnd(start + 10, end - 5);
+        if(Math.random() < 0.6){
+          list.push({id:nid(), type:'look', ts: base + m*60000});
+        } else {
+          list.push({id:nid(), type:'linger', ts: base + m*60000,
+            mins: Math.round(rnd(2,18)), sec: Math.round(rnd(0,59)), where: Math.random()<.65?'聊天页':'动态页'});
+        }
+      }
     });
-    T.events[key] = list;
-    persist();
+    if(added || !Array.isArray(T.evGen[key])){
+      T.evGen[key] = done;
+      persist();
+    }
     return list;
   }
 
