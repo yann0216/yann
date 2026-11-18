@@ -47,6 +47,7 @@ input,textarea{outline:none}
 .hidden{display:none!important}
 
 /* ---------- intro ---------- */
+html.no-intro #intro{display:none!important}
 #intro{
   position:fixed;inset:0;z-index:1000;display:grid;place-items:center;
   background:#FFFFFF;color:#2C2C32;overflow:hidden;
@@ -72,15 +73,16 @@ input,textarea{outline:none}
    之后停在完整造型上，2200ms 整块淡出 */
 /* letter-spacing 会在最后一个字后面留出同样宽的空隙，用等量负 margin 抵掉，
    这样字距在收拢时字不会左右漂，始终居中。淡入拆成独立动画，收拢曲线保持不变 */
-#intro .intro-base{opacity:0;animation:iABase 1.7s cubic-bezier(.2,.8,.25,1) forwards,iAFade .62s ease-out forwards}
+#intro .intro-base{opacity:0;letter-spacing:.44em;margin-right:-.44em;
+  animation:iABase 1.7s cubic-bezier(.2,.8,.25,1) both,iAFade .62s ease-out both}
 @keyframes iABase{0%{letter-spacing:.44em;margin-right:-.44em}100%{letter-spacing:.06em;margin-right:-.06em}}
 @keyframes iAFade{0%{opacity:0}100%{opacity:1}}
-#intro .intro-sup{opacity:0;animation:iASup 1.7s ease forwards}
+#intro .intro-sup{opacity:0;animation:iASup 1.7s ease both}
 @keyframes iASup{0%,44%{opacity:0;transform:translateY(.22em) scale(.8)}
   62%,100%{opacity:1;transform:translateY(.22em) scale(1)}}
-#intro .intro-rule{animation:iARule 1.7s ease forwards}
+#intro .intro-rule{animation:iARule 1.7s ease both}
 @keyframes iARule{0%,56%{width:0}78%,100%{width:34px}}
-#intro .intro-sub{animation:iASub 1.7s ease forwards}
+#intro .intro-sub{animation:iASub 1.7s ease both}
 @keyframes iASub{0%,68%{opacity:0;letter-spacing:.42em}88%,100%{opacity:1;letter-spacing:.3em}}
 @keyframes draw{to{stroke-dashoffset:0}}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -1787,8 +1789,8 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .tl-cs.off i{background:transparent;box-shadow:inset 0 0 0 1.5px #C2C2CC}
 .tl-scroll{flex:1;overflow-y:auto;padding:0 16px 20px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 
-.tl-weekbar{display:flex;align-items:center;gap:8px;padding:9px 10px;margin:2px 0 8px;
-  border:1px solid #E0E0E7;border-radius:14px;background:#FFFFFF}
+.tl-weekbar{display:flex;align-items:center;gap:8px;padding:6px 0 8px;margin:2px 0 6px;
+  border:0;background:transparent}
 .tl-week{flex:1;display:flex;gap:4px}
 .tl-wd{flex:1;text-align:center;cursor:pointer}
 .tl-wd span{font-size:9px;color:#C2C2CC;display:block}
@@ -1805,13 +1807,15 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .tl-strip i.on{box-shadow:0 0 0 1.5px #2C2C32}
 .tl-stripmeta{display:flex;justify-content:space-between;font-size:10px;color:#C2C2CC;padding:4px 0 8px}
 
-.tl-list{padding:4px 0 10px}
+.tl-list{position:relative;background:#FAFAFB;border-radius:16px;padding:10px 12px 8px;
+  box-shadow:inset 0 0 0 1px #F1F1F5}
+.tl-list::before{content:'';position:absolute;left:64px;top:24px;bottom:22px;width:1px;background:#EAEAF0}
 .tl-row{display:flex;align-items:flex-start;padding:9px 0;position:relative}
 .tl-row .tm{width:44px;flex:0 0 auto;font-size:11px;color:#B0B0B9;padding-top:4px;font-variant-numeric:tabular-nums}
 .tl-row .nd{width:17px;flex:0 0 auto;display:flex;justify-content:center;padding-top:5px;position:relative;z-index:1}
-.tl-row .nd i{width:8px;height:8px;border-radius:50%;background:#8E8E98;box-shadow:0 0 0 3px #FFFFFF}
-.tl-row.mine .nd i{background:#FFFFFF;box-shadow:inset 0 0 0 1.8px #BEBEC8,0 0 0 3px #FFFFFF}
-.tl-row.sys .nd i{width:7px;height:7px;border-radius:2px;background:#D5D5DA;box-shadow:0 0 0 3px #FFFFFF}
+.tl-row .nd i{width:8px;height:8px;border-radius:50%;background:#8E8E98;box-shadow:0 0 0 3px #FAFAFB}
+.tl-row.mine .nd i{background:#FAFAFB;box-shadow:inset 0 0 0 1.8px #BEBEC8,0 0 0 3px #FAFAFB}
+.tl-row.sys .nd i{width:7px;height:7px;border-radius:2px;background:#D5D5DA;box-shadow:0 0 0 3px #FAFAFB}
 .tl-row .cn{flex:1;min-width:0;padding-left:11px}
 .tl-row .nm{font-size:13.5px;color:#8E8E98;line-height:1.5}
 .tl-row .nm b{color:#8E8E98}
@@ -1821,7 +1825,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .tl-row.sys .nm{color:#B0B0B9}
 .tl-row.sys .nm b{color:#8E8E98}
 .tl-row.mark .nd svg{width:15px;height:15px;stroke:#6E6E78;fill:#8E8E98;stroke-width:1.3;stroke-linejoin:round;
-  background:#FFFFFF;border-radius:50%;box-shadow:0 0 0 3px #FFFFFF}
+  background:#FAFAFB;border-radius:50%;box-shadow:0 0 0 3px #FAFAFB}
 .tl-row.mark .nm b{color:#2C2C32;font-size:14px}
 .tl-row.mark .sub{color:#B0B0B9}
 .tl-empty{font-size:11px;color:#C2C2CC;text-align:center;padding:26px 0;line-height:1.8}
@@ -1951,6 +1955,8 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 
 
 <body>
+
+<script>try{if(sessionStorage.getItem('yann.introSeen')==='1')document.documentElement.classList.add('no-intro');}catch(e){}</script>
 
 <div id="intro" aria-hidden="true">
   <div class="intro-stage">
@@ -2766,17 +2772,17 @@ function peerLabel() {
   return r || (S.peer && S.peer.name) || '对方';
 }
 
-/* 头像里的首字：优先真名，其次备注，最后「对」 */
+/* 头像里的首字：跟着显示名走（备注优先） */
 function peerInitial() {
-  const s = String((S.peer && S.peer.name) || (S.peer && S.peer.remark) || '对方').trim();
+  const s = String(peerLabel() || '对方').trim();
   return s.slice(0, 1) || '对';
 }
 
-/* 帖子 / 评论里显示的名字：没名字就用备注，再没有就「对方」 */
+/* 帖子 / 评论里显示的名字：只用他的昵称（备注只用在聊天里） */
 function whoName(who) {
   if (!who) return '对方';
   if (who.name) return who.name;
-  return (S.peer && who === S.peer) ? peerLabel() : '我';
+  return (who === S.peer) ? peerLabel() : '我';
 }
 
 /* 对方的账号：没填就是空，不显示账号栏 */
@@ -3488,10 +3494,12 @@ function openMentionSheet() {
   const people = [{ who: S.peer, tag: '对方' }, { who: S.me, tag: '我' }];
   const rows = people.map(({ who, tag }) => {
     const u = avatarUrl(who.avatar);
-    const ini = esc(((whoName(who) || '·').trim().slice(0, 1)) || '·');
-    return `<div class="at-row" data-at="${esc(who.id || whoName(who))}">
+    /* 提及发生在聊天里，用备注名 */
+    const disp = (who === S.peer) ? peerLabel() : (who.name || '我');
+    const ini = esc(((disp || '·').trim().slice(0, 1)) || '·');
+    return `<div class="at-row" data-at="${esc(who.id || disp)}">
       <div class="at-av"${u ? ` style="background-image:url('${u}')"` : ''}>${u ? '' : ini}</div>
-      <div style="flex:1;min-width:0"><div class="at-nm">${esc(whoName(who))}</div><div class="at-id">@${esc(who.id || '')} · ${tag}</div></div>
+      <div style="flex:1;min-width:0"><div class="at-nm">${esc(disp)}</div><div class="at-id">@${esc(who.id || '')} · ${tag}</div></div>
     </div>`;
   }).join('');
   openSheet(`<h3>提及</h3>${rows}`, el => {
@@ -5575,10 +5583,11 @@ function settingsIndex() {
     </div>`).join('');
 }
 
-/* 预览里的小头像 */
+/* 预览里的小头像（聊天场景，用备注名首字） */
 function pvAvatar(who) {
   const u = avatarUrl(who.avatar);
-  const ini = esc(((whoName(who) || '·').trim().slice(0, 1)) || '·');
+  const disp = (who === S.peer) ? peerLabel() : (who.name || '我');
+  const ini = esc(((disp || '·').trim().slice(0, 1)) || '·');
   return `<div class="av"${u ? ` style="background-image:url('${u}')"` : ''}>${u ? '' : ini}</div>`;
 }
 
@@ -6221,7 +6230,7 @@ PAGE_RENDER.data = renderData;
 
 const DI = {
   out: '<svg viewBox="0 0 24 24"><path d="M12 16V5M8 9l4-4 4 4M5 19h14"/></svg>',
-  in: '<svg viewBox="0 0 24 24"><path d="M12 4v11M8 11l4 4 4-4M5 19h14"/></svg>',
+  in: '<svg viewBox="0 0 24 24"><path d="M3.5 6.5h5.2l2 2h9.8v11h-17z"/><path d="M12 11v5.2M9.4 13.6 12 16.2l2.6-2.6"/></svg>',
   txt: '<svg viewBox="0 0 24 24"><path d="M6 4h8l4 4v12H6z"/><path d="M14 4v4h4M9 13h6M9 16h4"/></svg>',
   trash: '<svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13"/></svg>'
 };
@@ -6546,10 +6555,14 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
   }
 
   function presenceEvents(key){
-    return ensurePresence(key).map(seg => ({
-      type:'online', who:'her', dur: seg[1]-seg[0],
-      ts: dateOf(key).getTime() + seg[1]*60000
-    }));
+    const segs = ensurePresence(key);
+    const base = dateOf(key).getTime();
+    const out = [];
+    segs.forEach(seg => {
+      out.push({ type:'offline', who:'her', dur: seg[1]-seg[0], ts: base + seg[0]*60000 });
+      out.push({ type:'online', who:'her', dur: seg[1]-seg[0], ts: base + seg[1]*60000 });
+    });
+    return out;
   }
 
   function dayRows(key){
@@ -6559,18 +6572,30 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
   }
 
   /* ---------- 渲染 ---------- */
+  /* 前缀名：统一走 peerLabel（备注 > 昵称），我这边用自己的昵称 */
+  function peerName(){
+    if(typeof peerLabel === 'function') return peerLabel();
+    const p = S.peer || {};
+    return (p.remark || p.name || '对方').trim() || '对方';
+  }
+  function myName(){
+    const m = S.me || {};
+    return (m.name || '我').trim() || '我';
+  }
+
   function rowHtml(e){
     let cls = 'tl-row';
     if(e.who === 'me') cls += ' mine';
     if(e.who === 'sys') cls += ' sys';
     let nm = '', sub = '';
     switch(e.type){
-      case 'look': nm = '对方看了动态'; sub = '刷了会儿动态页'; break;
-      case 'linger': nm = `在${e.where}停留 <b>${e.mins} 分 ${pad2(e.sec)} 秒</b>`; sub = '没有任何操作'; break;
-      case 'old': nm = `对方翻到了 <b>${e.days} 天前</b>的聊天`; sub = `往回翻了 ${e.screens} 屏`; break;
-      case 'online': nm = '对方回来了'; sub = `离线 ${e.dur} 分钟后上线`; break;
-      case 'post': nm = '对方发了动态'; sub = esc((e.text||'').slice(0,20)); break;
-      case 'mypost': nm = '你发了动态'; sub = esc((e.text||'').slice(0,20)); break;
+      case 'look': nm = `${esc(peerName())}看了动态`; sub = '刷了会儿动态页'; break;
+      case 'linger': nm = `${esc(peerName())}在${e.where}停留 <b>${e.mins} 分 ${pad2(e.sec)} 秒</b>`; sub = '没有任何操作'; break;
+      case 'old': nm = `${esc(peerName())}翻到了 <b>${e.days} 天前</b>的聊天`; sub = `往回翻了 ${e.screens} 屏`; break;
+      case 'online': nm = `${esc(peerName())}回来了`; sub = `离线 ${e.dur} 分钟后上线`; break;
+      case 'offline': nm = `${esc(peerName())}下线了`; sub = ''; break;
+      case 'post': nm = `${esc(peerName())}发了动态`; sub = esc((e.text||'').slice(0,20)); break;
+      case 'mypost': nm = `${esc(myName())}发了动态`; sub = esc((e.text||'').slice(0,20)); break;
       case 'call': nm = esc(e.text || '通话'); sub = ''; break;
       default: nm = '记录'; break;
     }
