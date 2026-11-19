@@ -121,6 +121,8 @@ html.no-intro #intro{display:none!important}
   transition:transform .4s cubic-bezier(.32,.72,0,1),opacity .28s ease;
 }
 .app-page.open{transform:none;opacity:1;pointer-events:auto}
+/* 关着的页面不能吃点击：.bar-title 这类显式 pointer-events:auto 的元素会挡住上层按钮（聊天页搜索键就被吞过） */
+.app-page:not(.open) *{pointer-events:none!important}
 .bar{
   position:relative;z-index:5;display:flex;align-items:center;gap:10px;
   padding:calc(env(safe-area-inset-top,0px) + 12px) 12px 11px;
@@ -1310,6 +1312,7 @@ html,body,.bub,.row.you .bub,.row.me .bub,.row-name,.si-name,.peer-name,.lrow,.l
 .post-by{flex:1;min-width:0;line-height:1.35}
 .post-by b{font-size:14.5px;font-weight:600;color:var(--text);margin-right:6px}
 .post-by span{font-size:12px;color:var(--text-3)}
+.post-by span .ed-t{font-style:normal;color:#B0B0B9;margin-left:2px;white-space:nowrap}
 .post-imgs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
 .post-imgs.single{grid-template-columns:1fr}
 .post-imgs img{width:100%;border-radius:18px;display:block;object-fit:cover;max-height:280px}
@@ -1553,6 +1556,7 @@ body,body *{font-weight:700}
 #chat .chat-bar{position:relative;justify-content:center;padding:8px 12px;border-bottom:1px solid #EFEFF3!important}
 #chat .chat-bar>.icon-btn{position:absolute;left:6px;top:50%;transform:translateY(-50%);width:34px;height:34px}
 #chat .chat-bar .peer{margin:0 auto;gap:8px;justify-content:center}
+#chat .chat-bar>.bar-actions{position:absolute;right:6px;top:50%;transform:translateY(-50%);margin:0;gap:0}
 #chat .peer .av{width:26px!important;height:26px!important;font-size:11px!important;align-self:center!important}
 #chat .peer-text{align-items:center}
 #chat .peer-name{font-size:13px!important;font-weight:600!important}
@@ -1911,15 +1915,15 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   box-shadow:0 30px 70px -30px rgba(23,23,29,.55)}
 .cal-sheet.on{display:block;animation:calPop .22s cubic-bezier(.22,.72,.2,1) both}
 @keyframes calPop{from{opacity:0;transform:translate(-50%,-50%) scale(.94)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
-.cal-head{display:flex;align-items:center;gap:8px;padding:2px 4px 12px}
+.cal-head{display:flex;align-items:center;gap:6px;padding:2px 4px 12px}
+.cal-head>div:first-child{flex:1;min-width:0}
 .cal-title{font-size:16px;color:#2C2C32;font-weight:600}
 .cal-sub{font-size:10px;color:#B0B0B9;margin-top:2px}
-.cal-x{width:28px;height:28px;border-radius:50%;background:#F2F2F5;display:grid;place-items:center;
-  margin-left:2px;cursor:pointer}
+.cal-x{width:28px;height:28px;border-radius:9px;background:#F2F2F5;display:grid;place-items:center;
+  flex:0 0 auto;cursor:pointer}
 .cal-x svg{width:12px;height:12px;stroke:#8E8E98;fill:none;stroke-width:2.4;stroke-linecap:round}
 .cal-nav{width:28px;height:28px;border-radius:9px;background:#F2F2F5;display:grid;place-items:center;flex:0 0 auto;cursor:pointer}
-.cal-nav:first-of-type{margin-left:auto}
-.cal-nav svg{width:13px;height:13px;stroke:#5C5C66;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.cal-nav:first-of-type{margin-left:auto}.cal-nav svg{width:13px;height:13px;stroke:#5C5C66;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .cal-nav.dim{opacity:.4}
 .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:0 2px 5px}
 .cal-dow span{text-align:center;font-size:9px;color:#C2C2CC}
@@ -2048,7 +2052,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   <section class="panel active" id="p-chats">
     <header class="tt" style="display:flex;align-items:center;justify-content:space-between">
       <div class="tt-title">Chats</div>
-      <button class="icon-btn" id="chatsSearch" aria-label="搜索"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg></button>
     </header>
     <div id="tlHome">
       <div class="tl-conv" id="tlConv" data-open="chat"></div>
@@ -2140,6 +2143,9 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   <div id="chatBg"></div>
   <div class="bar chat-bar">
     <button class="icon-btn" data-back aria-label="返回"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="bar-actions">
+      <button class="icon-btn" id="chatSearch" aria-label="搜索聊天记录"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg></button>
+    </div>
     <div class="peer" id="peerHead">
       <div class="av" id="peerAv"></div>
       <div class="peer-text">
@@ -2159,9 +2165,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   </div>
   <div id="actionPanel" class="plus-panel">
     <div class="action-grid">
-      <button class="action-tile" data-a="search">
-        <i><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg></i><span>搜索</span>
-      </button>
       <button class="action-tile" data-a="import">
         <i><svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M4.5 17.5l4.6-4.3 3.4 3 2.6-2.3 4.4 4.1"/></svg></i><span>导入表情</span>
       </button>
@@ -3245,7 +3248,7 @@ function postCard(p) {
   return `<div class="post${p.repostOf ? ' rp-card' : ''}">
     <div class="post-head">
       <div class="post-av"${mine ? '' : ` data-peek="peer" title="查看主页"`}${meAv ? ` style="background-image:url('${meAv}')"` : ''}>${meAv ? '' : esc(((whoName(who) || '·').trim().slice(0, 1)) || '·')}</div>
-      <div class="post-by"><b>${esc(whoName(who))}</b>${p.repostOf ? `<span class="rp-pill">${IC_REPOST}转发</span>` : ''}<span>${atSpan(whoId)}${postTime(p.ts)}</span></div>
+      <div class="post-by"><b>${esc(whoName(who))}</b>${p.repostOf ? `<span class="rp-pill">${IC_REPOST}转发</span>` : ''}<span>${atSpan(whoId)}${postTime(p.ts)}${p.editedAt && p.editedAt > (p.ts || 0) ? `<em class="ed-t">· 编辑于 ${postTime(p.editedAt)}</em>` : ''}</span></div>
       ${mine ? `<div class="post-menu-wrap">
         <button class="post-dots" data-dots="${p.id}" aria-label="更多"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18" cy="12" r="1.7"/></svg></button>
         <div class="post-menu" data-menu="${p.id}">
@@ -5131,6 +5134,8 @@ document.addEventListener('pointerdown', e => {
 
 function bindChat() {
   $('#btnSend').addEventListener('click', sendMsg);
+  const csBtn = $('#chatSearch');
+  if (csBtn) csBtn.addEventListener('click', () => { closePanels(); go('search'); });
   $('#btnPlus').addEventListener('click', () => {
     const p = $('#actionPanel');
     const willOpen = !p.classList.contains('open');
