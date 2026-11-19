@@ -1801,14 +1801,14 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 #call .call-btns{gap:20px}
 #call .call-btn.answer,#call .call-btn.hang{width:62px;height:62px;border:none!important}
 #call .call-btn.answer{background:#E9F5EC!important;color:#3E8E55!important}
-#call .call-btn.answer svg{width:26px;height:26px;stroke-width:1.9}
+#call .call-btn.answer svg{width:26px;height:26px;transform:rotate(135deg);stroke-width:1.9}
 #call .call-btn.hang{background:#FBEAEB!important;color:#B36565!important}
-#call .call-btn.hang svg{width:25px;height:25px;transform:rotate(135deg);stroke-width:1.9}
+#call .call-btn.hang svg{width:25px;height:25px;transform:none;stroke-width:1.9}
 /* 通话中挂断保持同一套，不再反色 */
 #call.call-screen.active .call-btn.hang{background:#FBEAEB!important;color:#B36565!important;border:none!important}
 /* 通话中四个按钮要一样大，否则挂断显得突出 */
 #call.call-screen.active .call-btn.hang{width:54px;height:54px}
-#call.call-screen.active .call-btn.hang svg{width:22px;height:22px}
+#call.call-screen.active .call-btn.hang svg{width:22px;height:22px;transform:none}
 /* 通话中的圆形选项：麦克风 / 摄像头 / 最小化 */
 #call .call-btn.opt,#call .call-btn.min{width:54px;height:54px;background:#F1F1F4!important;color:#5C5C66!important;
   border:none!important;position:relative}
@@ -4345,29 +4345,43 @@ function deliverReply() {
   const stickers = (S.stickers || []).filter(s => MEDIA['sticker:' + s.id]);
   const cards = pool();
   if (!cards.length && !stickers.length) { toast('字卡和表情都还是空的'); return; }
-  const useSticker = stickers.length > 0 && (!cards.length || Math.random() * 100 < st.stickerRatio);
-  if (useSticker) {
-    const lastMine = [...S.messages].reverse().find(x => x.sticker && x.role === 'me');
-    const pickPool = lastMine && stickers.length > 1
-      ? stickers.filter(s => 'sticker:' + s.id !== lastMine.sticker)
-      : stickers;
-    const s = pick(pickPool.length ? pickPool : stickers);
-    addPeerMsg('[表情]', { sticker: 'sticker:' + s.id });
-    return;
-  }
   const cMin = Math.max(1, Math.min(10, Number(st.countMin) || 1));
   const cMax = Math.max(cMin, Math.min(10, Number(st.countMax) || cMin));
   const n = randInt(cMin, cMax);
-  let texts = sampleCards(cards, n).map(c => c.text);
+  const ratio = Math.max(0, Math.min(100, Number(st.stickerRatio) || 0));
+  /* 每条独立撑一次：比例以内是表情，以外是字卡（不是整轮二选一） */
+  const kinds = [];
+  for (let i = 0; i < n; i++) {
+    kinds.push(stickers.length && Math.random() * 100 < ratio ? 'sticker' : 'text');
+  }
+  if (!stickers.length) kinds.fill('text');
+  if (!cards.length) kinds.fill('sticker');
+  const textCount = kinds.filter(k => k === 'text').length;
+  const texts = sampleCards(cards, textCount).map(c => c.text);
   const quote = st.quoteOn && Math.random() * 100 < st.quoteRate ? buildQuote() : null;
-  const seq = texts.map((t, i) => ({ text: t, quote: i === 0 ? quote : null }));
+  /* 同一轮里不重复同一个表情，也不跟她上一条重复 */
+  const lastMine = [...S.messages].reverse().find(x => x.sticker && x.role === 'me');
+  let sPool = lastMine && stickers.length > 1
+    ? stickers.filter(s => 'sticker:' + s.id !== lastMine.sticker)
+    : stickers.slice();
+  if (!sPool.length) sPool = stickers.slice();
+  let ti = 0, qi = 0;
+  const seq = kinds.map(k => {
+    if (k === 'sticker') {
+      const s = pick(sPool);
+      if (sPool.length > 1) sPool = sPool.filter(x => x.id !== s.id);
+      return { sticker: 'sticker:' + s.id };
+    }
+    return { text: texts[ti++], quote: qi++ === 0 ? quote : null };
+  });
   stepDeliver(seq, 0);
 }
 
 function stepDeliver(seq, i) {
   if (i >= seq.length) return;
   const it = seq[i];
-  addPeerMsg(it.text, { quote: it.quote });
+  if (it.sticker) addPeerMsg('[表情]', { sticker: it.sticker });
+  else addPeerMsg(it.text, { quote: it.quote });
   if (i < seq.length - 1) {
     showTyping();
     replyTimer = setTimeout(() => { hideTyping(); stepDeliver(seq, i + 1); }, rand(700, 1700));
@@ -6098,8 +6112,8 @@ function renderSettings() {
     `<div class="row-s"><div class="lab">最多</div><div class="ctl"><input class="fld num" type="number" min="1" max="10" data-k="settings.countMax" value="${st.countMax}"><span style="font-size:12px;color:#9A9AA4">条</span></div></div>`,
     `<div class="row-col">
       <div style="display:flex;justify-content:space-between;align-items:baseline">
-        <div class="lab" style="margin:0">回复构成</div>
-        <span class="val" data-val="settings.stickerRatio">表情 ${st.stickerRatio}% · 字卡 ${100 - st.stickerRatio}%</span>
+        <div class="lab" style="margin:0">每条内容</div>
+        <span class="val" data-val="settings.stickerRatio">每条：表情 ${st.stickerRatio}% · 字卡 ${100 - st.stickerRatio}%</span>
       </div>
       <input class="range" type="range" min="0" max="100" step="5" value="${st.stickerRatio}" data-range="settings.stickerRatio" data-unit="%">
     </div>`
