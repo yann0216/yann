@@ -868,7 +868,8 @@ body{font-size:15px;letter-spacing:0}
 .panel{display:none;flex-direction:column;flex:1;min-height:0;position:relative;overflow:hidden}
 .panel.active{display:flex}
 .tt{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 8px;background:#FFFFFF;flex:0 0 auto}
-.tt-title{font-size:22px;font-weight:600;letter-spacing:0;color:#5C5C66;flex:1;min-width:0}
+.tt-title{font-size:26px;font-weight:700;letter-spacing:-.01em;color:#2C2C32!important;flex:1;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .list,.scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .panel .scroll{padding-bottom:28px}
 
@@ -1078,7 +1079,7 @@ body{font-size:15px;letter-spacing:0}
 #postFab{bottom:20px}
 
 /* ==== 纯黑 → 深灰 ==== */
-html,body,.bub,.row.you .bub,.row.me .bub,.tt-title,.row-name,.si-name,.peer-name,.lrow,.list-btn,.data-row .txt,.txt,.card-text,.sheet h3,.call-name,.member input,.mem-name,.fld,.seg button,.chip,.icon-btn,.who,.manage-bar button,.tiny-btn,.sheet-actions button,.sheet-actions button.danger,.call-btn.min,#composer .icon-act.plus,.msg-menu button,.call-menu button{color:#5C5C66!important}
+html,body,.bub,.row.you .bub,.row.me .bub,.row-name,.si-name,.peer-name,.lrow,.list-btn,.data-row .txt,.txt,.card-text,.sheet h3,.call-name,.member input,.mem-name,.fld,.seg button,.chip,.icon-btn,.who,.manage-bar button,.tiny-btn,.sheet-actions button,.sheet-actions button.danger,.call-btn.min,#composer .icon-act.plus,.msg-menu button,.call-menu button{color:#5C5C66!important}
 .badge,.sw.on,.chip.on,.fab,#toast,.seg button.on,.sheet-actions button.primary,.manage-bar button.danger,.btn-send,#composer .icon-act.send,.sticker-cell .del,.set-sticker i,.call-btn.hang,.call-btn.answer,.call-mini .cm-hang,.sbtn.on{background-color:#6E6E78!important;color:#FFFFFF!important}
 .tab.on{color:#5C5C66!important}
 .checks{stroke:#9A9AA4}
@@ -1516,7 +1517,6 @@ body,body *{font-weight:700}
 
 /* —— Chats：白底会话行 + 内缩细线 —— */
 #p-chats .tt{padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 4px}
-#p-chats .tt-title{font-size:32px;font-weight:700;letter-spacing:-.02em;color:#4A4A54}
 #chatsList{padding:6px 0 0}
 #chatsList .row-item{background:#FFFFFF!important;border:none!important;border-radius:0!important;
   margin:0!important;padding:10px 16px!important;box-shadow:none!important;min-height:64px;position:relative}
@@ -1607,7 +1607,6 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 #p-settings .tiny-btn,#p-settings .avatar-row .av{box-shadow:none!important}
 
 /* ==== Cards 安静版 ==== */
-#p-deck .tt-title{font-size:32px;font-weight:700;letter-spacing:-.02em;color:#4A4A54}
 .deck-menu{position:absolute;right:12px;top:calc(env(safe-area-inset-top,0px) + 52px);width:170px;z-index:40;
   background:#FFFFFF;border:1px solid #ECECF1!important;border-radius:14px;padding:5px;display:none;
   box-shadow:0 12px 30px rgba(20,20,28,.10)}
@@ -1622,19 +1621,29 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 #p-deck .tt .icon-btn{background:none;width:32px;height:32px;color:#8E8E98}
 #p-deck .tt .icon-btn:active{background:#F1F1F4}
 
-/* ==== 站内消息提示：一条细线 + 一行小字 ==== */
-#msgHint{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:300;
-  display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;
-  opacity:0;transition:opacity .25s ease}
-#msgHint.on{opacity:1;pointer-events:auto}
-#msgHint .ln{height:1px;width:0;background:#D5D5DA!important;transition:width .38s cubic-bezier(.2,.8,.2,1)}
-#msgHint.on .ln{width:52%}
-#msgHint .lt{font-size:11.5px;letter-spacing:.06em;color:#9A9AA4!important;font-weight:600;
-  opacity:0;transform:translateY(-3px);transition:opacity .3s ease .08s,transform .3s ease .08s}
+/* ==== 站内消息提示：贴在页头下方的毛玻璃胶囊 ==== */
+#msgHint{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 58px);z-index:300;
+  width:fit-content;max-width:calc(100% - 32px);margin:0 auto;
+  display:flex;align-items:center;gap:8px;padding:7px 15px 7px 10px;border-radius:999px;
+  background:rgba(255,255,255,.9);
+  -webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);
+  border:1px solid #E7E7ED!important;
+  box-shadow:0 8px 22px rgba(19,19,23,.10);
+  pointer-events:none;opacity:0;transform:translateY(-8px);
+  transition:opacity .22s ease,transform .22s ease}
+#msgHint.on{opacity:1;transform:none;pointer-events:auto}
+#msgHint::before{content:'';flex:0 0 auto;width:18px;height:18px;border-radius:50%;background-color:#0B93F6;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12.5 9 17.5 20 6.5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:center;background-size:10px 10px}
+#msgHint .ln{display:none}
+#msgHint .lt{display:flex;align-items:center;gap:6px;min-width:0;
+  font-size:12.5px;letter-spacing:.01em;color:#2C2C32!important;
+  opacity:0;transform:translateY(-2px);transition:opacity .3s ease .06s,transform .3s ease .06s}
 #msgHint.on .lt{opacity:1;transform:none}
+#msgHint .lt .nm{color:#9A9AA4!important;flex:0 0 auto}
+#msgHint .lt .ms{color:#2C2C32!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* ==== Settings：一页式，chip 切换区域 ==== */
-#p-settings .tt-title{font-size:30px;font-weight:700;letter-spacing:-.02em;color:#4A4A54}
 #p-settings .set-head{padding:8px 16px 0}
 #p-settings .me-card{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:#FAFAFB}
 #p-settings .me-card .av-big{width:40px!important;height:40px!important;font-size:15px;border-radius:50%!important;background-size:cover;background-position:center}
@@ -1844,7 +1853,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .tl-cn{font-size:15px;color:#2C2C32;display:flex;align-items:center;gap:6px}
 .tl-cn .t{font-size:10px;color:#B0B0B9;margin-left:auto}
 .tl-cs{font-size:11px;color:#A8A8B3;margin-top:4px;display:flex;align-items:center;gap:5px}
-.tl-cs i{width:5px;height:5px;border-radius:50%;background:#8E8E98;flex:0 0 auto}
+.tl-cs i{width:5px;height:5px;border-radius:50%;background:#0B93F6;flex:0 0 auto}
 .tl-cs.off i{background:transparent;box-shadow:inset 0 0 0 1.5px #C2C2CC}
 .tl-conv .row-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;
   border-radius:9px;background:#0B93F6;color:#FFFFFF!important;font-size:10px;font-weight:700;
@@ -2312,7 +2321,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 <div id="msgMenu" class="msg-menu"></div>
 <div id="sheetHost"></div>
 <div id="toast"></div>
-<div id="msgHint"><div class="ln"></div><div class="lt"></div></div>
+<div id="msgHint"><div class="ln"></div><div class="lt"><span class="nm"></span><span class="ms"></span></div></div>
 <input type="file" id="filePick" class="hidden">
 
 <script>
@@ -2994,9 +3003,11 @@ function renderPeerPanel() {
   if (!box) return;
   const t = $('#peerTitle');
   if (t) t.textContent = peerLabel();
-  const all = (S.posts || []).filter(p => p.by === 'peer').sort((a, b) => b.ts - a.ts);
-  const saved = all.filter(p => p.saved);
-  const posts = peerTab === 'saved' ? saved : all;
+  const allPosts = (S.posts || []).slice().sort((a, b) => b.ts - a.ts);
+  const his = allPosts.filter(p => p.by === 'peer');
+  /* 他的收藏夹 = 他收藏的那些（可能是我的帖），不是我的收藏 */
+  const saved = allPosts.filter(p => p.peerSaved);
+  const posts = peerTab === 'saved' ? saved : his;
   const savedView = peerTab === 'saved';
   const panel = box.closest('.panel');
   if (panel) panel.classList.toggle('saved-mode', savedView);
@@ -3018,7 +3029,7 @@ function savedBarHtml(kind, n) { return ''; }
 /* 收藏夹说明区：交代「这里是收藏夹、有几条」 */
 function savedIntroHtml(n) {
   return `<div class="saved-intro"><div class="si-ic">${IC_SAVE}</div>
-    <div><div class="si-t">已收藏的 ${n} 条动态</div><div class="si-s">只有你能看到这里</div></div></div>`;
+    <div><div class="si-t">已收藏的 ${n} 条动态</div></div></div>`;
 }
 PAGE_RENDER.peer = renderPeerPanel;
 
@@ -3953,8 +3964,11 @@ function renderSearchResults(q) {
     const post = esc(m.text.slice(idx + raw.length, idx + raw.length + 34));
     const d = new Date(m.ts);
     const date = `${d.getMonth() + 1}/${d.getDate()} ${hhmm(m.ts)}`;
+    const person = mine ? S.me : S.peer;
+    const av = avatarUrl(person.avatar);
+    const ini = esc(((name || '·').trim().slice(0, 1)) || '·');
     return `<div class="row-item" data-mid="${m.id}">
-      <div class="row-av">${esc(((name || '·').trim().slice(0, 1)) || '·')}</div>
+      <div class="row-av"${av ? ` style="background-image:url('${av}')"` : ''}>${av ? '' : ini}</div>
       <div class="row-main">
         <div class="row-top"><span class="row-name">${esc(name)}</span><span class="row-time">${date}</span></div>
         <div class="row-bot"><span class="row-sub">${pre}<mark>${hit}</mark>${post}</span></div>
@@ -3998,6 +4012,12 @@ function bindShell() {
     }
     const peek = e.target.closest('[data-peek]');
     if (peek) { peekProfile(peek.dataset.peek); return; }
+    const likeP = e.target.closest('[data-like]');
+    if (likeP) {
+      const p = (S.posts || []).find(x => x.id === likeP.dataset.like);
+      if (p) { p.liked = !p.liked; p.likedAt = p.liked ? Date.now() : null; save(); renderPeerPanel(); }
+      return;
+    }
     const sv = e.target.closest('[data-save]');
     if (sv) {
       const p = (S.posts || []).find(x => x.id === sv.dataset.save);
@@ -4181,7 +4201,7 @@ function renderMsgs(force) {
   forceScroll = false;
 }
 
-/* 站内提示：顶部一条细线 + 一行小字，2.4 秒后自行消失；点它进聊天 */
+/* 站内提示：页头下方一个毛玻璃小胶囊，2.6 秒后自行消失；点它进聊天 */
 let hintTimer = null;
 function showMsgHint(text) {
   if (S.settings.hintOn === false) return;
@@ -4189,12 +4209,23 @@ function showMsgHint(text) {
   if (!el) return;
   const t = decodeMentions(String(text || '')).replace(/\s+/g, ' ').trim();
   if (!t) return;
-  el.querySelector('.lt').textContent = (peerLabel() || '对方') + '：' + (t.length > 22 ? t.slice(0, 22) + '…' : t);
+  const nm = el.querySelector('.nm'), ms = el.querySelector('.ms');
+  if (nm && ms) {
+    nm.textContent = peerLabel() || '对方';
+    ms.textContent = t.length > 26 ? t.slice(0, 26) + '…' : t;
+  } else {
+    el.querySelector('.lt').textContent = (peerLabel() || '对方') + '：' + t;
+  }
+  /* 贴在当前页页头下方 8px：不压标题，也不碰右上角按钮 */
+  const hd = document.querySelector('.app-page.open .day-bar') ||
+             document.querySelector('.app-page.open .tt') ||
+             document.querySelector('.panel.active .tt');
+  if (hd) el.style.top = Math.round(hd.getBoundingClientRect().bottom + 8) + 'px';
   el.classList.remove('on');
   void el.offsetWidth;
   el.classList.add('on');
   clearTimeout(hintTimer);
-  hintTimer = setTimeout(() => el.classList.remove('on'), 2400);
+  hintTimer = setTimeout(() => el.classList.remove('on'), 2600);
 }
 
 function pushMsg(m) {
@@ -4522,11 +4553,13 @@ function sendMsg() {
   if (!t) return;
   const q = pendingQuote ? { text: pendingQuote.text.slice(0, 60) } : null;
 
-  /* 对方离线时发消息：90% 立刻回来（先变在线，再回复）；10% 不回，消息保持未读直到对方上线 */
+  /* 对方离线时发消息：平时 80% 立刻回来（先变在线、再回复），凌晨 01–07 降到 50%；没回来的挂着未读 */
   let hold = false;
   try {
     if (window.tlPeerState && !window.tlPeerState().online) {
-      if (Math.random() < 0.9) {
+      const hh = new Date().getHours();
+      const backRate = (hh >= 1 && hh < 7) ? 0.5 : 0.8;
+      if (Math.random() < backRate) {
         if (window.tlGoOnline) window.tlGoOnline();
         setTimeout(refreshPeerStatus, 30);
       } else {
@@ -6499,6 +6532,87 @@ function bindData() {
   });
 }
 
+/* ================= 数据自检：把明显错误的数据直接剔掉 ================= */
+function sanitizeData(){
+  let fixed = 0;
+  const now = Date.now();
+  const okType = { look:1, linger:1, old:1 };
+
+  /* 时间轴的生成事件 */
+  const T = S.timeline;
+  if (T && T.events && typeof T.events === 'object') {
+    Object.keys(T.events).forEach(key => {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(key);
+      if (!m) { delete T.events[key]; fixed++; return; }
+      const base = new Date(+m[1], +m[2]-1, +m[3]).getTime();
+      const seen = new Set();
+      const list = (Array.isArray(T.events[key]) ? T.events[key] : []).filter(e => {
+        if (!e || !okType[e.type]) { fixed++; return false; }
+        const ts = Number(e.ts);
+        if (!isFinite(ts)) { fixed++; return false; }
+        if (ts > now) { fixed++; return false; }                       /* 未来时间 */
+        if (ts < base || ts >= base + 86400000) { fixed++; return false; } /* 落到别的日子 */
+        const mk = e.type + ':' + Math.floor(ts / 60000);
+        if (seen.has(mk)) { fixed++; return false; }                   /* 同一分钟同类重复 */
+        seen.add(mk);
+        return true;
+      });
+      if (!list.length) delete T.events[key]; else T.events[key] = list;
+    });
+  }
+
+  /* 离线表 */
+  if (T && T.presence && typeof T.presence === 'object') {
+    Object.keys(T.presence).forEach(key => {
+      const raw = Array.isArray(T.presence[key]) ? T.presence[key] : [];
+      const segs = raw.filter(s => Array.isArray(s) && s.length === 2 &&
+        isFinite(s[0]) && isFinite(s[1]) && s[0] >= 0 && s[1] <= 1440 && s[1] > s[0]);
+      if (segs.length !== raw.length) fixed++;
+      if (!segs.length) delete T.presence[key]; else T.presence[key] = segs;
+    });
+  }
+
+  /* 重要的日子 */
+  if (T && T.days && typeof T.days === 'object') {
+    Object.keys(T.days).forEach(key => {
+      const v = T.days[key];
+      if (!/^(\d{4})-(\d{2})-(\d{2})$/.test(key) || !v || !String(v.n || '').trim()) {
+        delete T.days[key]; fixed++;
+      }
+    });
+  }
+
+  /* 消息：时间非法 / 未来 / 重复 id */
+  if (Array.isArray(S.messages)) {
+    const seen = new Set();
+    S.messages = S.messages.filter(msg => {
+      if (!msg) { fixed++; return false; }
+      const ts = Number(msg.ts);
+      if (!isFinite(ts) || ts > now + 60000) { fixed++; return false; }
+      if (msg.id && seen.has(msg.id)) { fixed++; return false; }
+      if (msg.id) seen.add(msg.id);
+      return true;
+    });
+  }
+
+  /* 动态：id 重复 / 时间非法 / 无效的转发指向 */
+  if (Array.isArray(S.posts)) {
+    const seen = new Set();
+    const ids = new Set(S.posts.map(p => p && p.id));
+    S.posts = S.posts.filter(p => {
+      if (!p) { fixed++; return false; }
+      const ts = Number(p.ts);
+      if (!isFinite(ts) || ts > now + 60000) { fixed++; return false; }
+      if (p.id && seen.has(p.id)) { fixed++; return false; }
+      if (p.id) seen.add(p.id);
+      if (p.repostOf && !ids.has(p.repostOf)) { /* 原帖已删：保留，渲染时会显示“原动态已删除” */ }
+      return true;
+    });
+  }
+
+  if (fixed) { try { save(); } catch (e) {} }
+  return fixed;
+}
 /* ================= 分区导出 / 导入 ================= */
 const SECTION_DEFS = [
   { k:'chat',  g:'对话', name:'聊天记录',       desc:'消息 · 已读 · 通话记录',            n:()=>`${(S.messages||[]).length} 条` },
@@ -6681,6 +6795,7 @@ async function doImportSections(data, keys, mode){
     }
   }
   save();
+  try { sanitizeData(); } catch (e) { }
   try{ applyTheme(); }catch(e){}
   try{ renderHome(); renderChats(); renderData(); armProactive(); armPeerPost(); }catch(e){}
   if(CUR && PAGE_RENDER[CUR]){ try{ PAGE_RENDER[CUR](); }catch(e){} }
@@ -6794,6 +6909,7 @@ async function resetAll() {
 
   /* 先让首帧稳定下来（布局/样式算完）再起动画，避免开场第一帧就抢主线程 */
   requestAnimationFrame(() => setTimeout(playIntro, 40));
+  try { const n = sanitizeData(); if (n) console.log('[自检] 修正了', n, '处异常数据'); } catch (e) { }
   armProactive();
   armPeerPost();
 
@@ -6945,6 +7061,11 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
       T.evGen[key] = done;
       persist();
     }
+    /* 清掉可能残留的未来事件（旧逻辑生成过） */
+    const nowTs2 = Date.now();
+    for(let i = list.length - 1; i >= 0; i--){
+      if(list[i].ts > nowTs2) list.splice(i, 1);
+    }
     return list;
   }
 
@@ -6954,6 +7075,8 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
     if(key < T.since || key > todayKey()){ delete T.presence[key]; return []; }
     if(T.presence[key]) return T.presence[key];
     const segs = [];
+    /* 凌晨 01–07：八成默认离线，整段睡过去 */
+    if(Math.random() < 0.8) segs.push([60, 420]);
     const n = 1 + Math.floor(Math.random()*3);
     for(let i=0;i<n;i++){
       const len = Math.round(rnd(20,45));
@@ -7002,10 +7125,13 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
   function presenceEvents(key){
     const segs = ensurePresence(key);
     const base = dateOf(key).getTime();
+    const nowTs = Date.now();
     const out = [];
     segs.forEach(seg => {
-      out.push({ type:'offline', who:'her', dur: seg[1]-seg[0], ts: base + seg[0]*60000 });
-      out.push({ type:'online', who:'her', dur: seg[1]-seg[0], ts: base + seg[1]*60000 });
+      const tOff = base + seg[0]*60000, tOn = base + seg[1]*60000;
+      /* 只输出已经发生的：离线表可以排到全天，但还没到的时间不能上屏 */
+      if(tOff <= nowTs) out.push({ type:'offline', who:'her', dur: seg[1]-seg[0], ts: tOff });
+      if(tOn <= nowTs) out.push({ type:'online', who:'her', dur: seg[1]-seg[0], ts: tOn });
     });
     return out;
   }
@@ -7013,7 +7139,9 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
   function dayRows(key){
     const gen = ensureEvents(key).slice();
     const rows = realEvents(key).concat(gen, presenceEvents(key));
-    return rows.sort((a,b) => b.ts - a.ts);
+    /* 一律不上屏未来时间的事件 */
+    const nowTs = Date.now();
+    return rows.filter(e => e.ts <= nowTs).sort((a,b) => b.ts - a.ts);
   }
 
   /* ---------- 渲染 ---------- */

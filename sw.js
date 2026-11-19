@@ -3,7 +3,7 @@
    - 图标/清单等静态资源：缓存优先
    - 每次发版只需把 CACHE 版本号 +1
 */
-const CACHE = 'yann-v65';
+const CACHE = 'yann-v66';
 const ASSETS = [
   './index.html',
   './manifest.webmanifest',
