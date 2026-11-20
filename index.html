@@ -1647,6 +1647,106 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 #msgHint .lt .nm{color:#9A9AA4!important;flex:0 0 auto}
 #msgHint .lt .ms{color:#2C2C32!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
+/* ==== 问卷：我出题、对方作答 ==== */
+/* 出题悬浮窗 */
+.sv-sheet{display:flex;flex-direction:column;height:min(74vh,600px)}
+.sv-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 2px 12px;flex:0 0 auto}
+.sv-bar b{font-size:17px;color:#2C2C32;letter-spacing:-.01em}
+.sv-bar .sv-count{font-size:11.5px;color:#9A9AA4}
+.sv-rec{display:inline-flex;align-items:center;gap:3px;background:none;border:none;font-family:inherit;
+  font-size:12.5px;font-weight:700;color:#5C5C66;padding:6px 2px;flex:0 0 auto}
+.sv-rec svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.sv-scroll{flex:1;overflow-y:auto;padding:2px 2px 6px;-webkit-overflow-scrolling:touch}
+.sv-footbar{display:flex;gap:10px;flex:0 0 auto;padding-top:12px;border-top:1px solid #F0F0F4!important;margin-top:10px}
+.sv-footbar button{flex:1;height:44px;border-radius:14px;border:none;font-family:inherit;font-weight:700;font-size:14px}
+.sv-cancel{background:#F1F1F4;color:#5C5C66}
+.sv-send{background:#6E6E78;color:#fff}
+
+/* 题目卡（出题器里） */
+.sv-card{background:#F8F8FA;border:1px solid #E7E7EE!important;border-radius:16px;padding:14px 14px 10px;margin-bottom:10px}
+.sv-qhead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.sv-no{font-size:11px;color:#B0B0B9;letter-spacing:.06em}
+.sv-seg{display:inline-flex;margin-left:auto;background:#EDEDF1;border-radius:8px;padding:2px}
+.sv-seg button{font-family:inherit;font-size:11px;font-weight:700;padding:4px 10px;border:none;border-radius:6px;background:none;color:#8E8E98}
+.sv-seg button.on{background:#fff;color:#2C2C32;box-shadow:0 1px 2px rgba(19,19,23,.06)}
+.sv-input{width:100%;border:none!important;background:none;outline:none;font-family:inherit;font-weight:700;
+  font-size:15px;color:#2C2C32;padding:0 0 6px;-webkit-appearance:none}
+.sv-input::placeholder{color:#B0B0B9}
+.sv-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-top:1px solid #EFEFF4!important}
+.sv-row .mk{width:16px;height:16px;border-radius:50%;border:1.5px solid #D5D5DA!important;flex:0 0 auto}
+.sv-row .mk.sq{border-radius:5px}
+.sv-row input{flex:1;min-width:0;border:none!important;background:none;outline:none;font-family:inherit;
+  font-weight:700;font-size:13.5px;color:#5C5C66;-webkit-appearance:none}
+.sv-row input::placeholder{color:#C4C4C9}
+.sv-row .x{border:none;background:none;font-family:inherit;color:#C4C4C9;font-size:15px;padding:0 2px;line-height:1}
+.sv-add{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#8E8E98;padding:10px 0 0;
+  border:none;border-top:1px solid #EFEFF4!important;background:none;font-family:inherit;font-weight:700;width:100%}
+.sv-add svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.sv-addq{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;height:44px;border-radius:16px;
+  background:none;border:1px dashed #DCDCE4!important;color:#9A9AA4;font-family:inherit;font-weight:700;font-size:13px}
+.sv-addq svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+
+/* 出题弹窗（居中，跟添加字卡同一种） */
+.sv-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
+.sv-hd h4{margin:0}
+.sv-reclink{display:inline-flex;align-items:center;gap:2px;background:none;border:none;font-family:inherit;
+  font-size:12px;font-weight:700;color:#8E8E98;padding:2px 0 2px 6px}
+.sv-reclink svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.sv-count{font-size:11.5px;color:#9A9AA4}
+.sv-optrow{display:flex;align-items:center;gap:6px;margin-top:10px}
+.sv-optrow .m-input{margin-top:0;flex:1;min-width:0}
+.sv-del{border:none;background:none;font-family:inherit;color:#C4C4C9;font-size:16px;padding:0 4px;line-height:1}
+.sheet.center .sv-seg{display:inline-flex;background:#EDEDF1;border-radius:8px;padding:2px;margin-left:auto}
+.sheet.center .sv-seg button{font-family:inherit;font-size:11px;font-weight:700;padding:4px 10px;border:none;border-radius:6px;background:none;color:#8E8E98}
+.sheet.center .sv-seg button.on{background:#fff;color:#2C2C32;box-shadow:0 1px 2px rgba(19,19,23,.06)}
+
+/* 聊天里的问卷卡 */
+.sv-msg{width:262px;background:#fff;border:1px solid #ECECF2!important;border-radius:16px;padding:12px 13px}
+.sv-msg .sv-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.sv-msg .sv-ico{width:24px;height:24px;border-radius:8px;background:#F2F2F5;display:grid;place-items:center;flex:0 0 auto}
+.sv-msg .sv-ico svg{width:13px;height:13px;stroke:#5C5C66;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.sv-msg .sv-h b{font-size:13px;color:#2C2C32}
+.sv-msg .sv-h em{font-style:normal;font-size:11px;color:#B0B0B9;margin-left:auto}
+.sv-qa{padding:8px 0;border-top:1px solid #F3F3F6!important}
+.sv-qa:first-of-type{border-top:none!important;padding-top:0}
+.sv-qq{display:block;font-size:11px;color:#B0B0B9;line-height:1.45;margin-bottom:5px}
+.sv-oi{display:flex;align-items:center;gap:7px;font-size:12.5px;color:#8E8E98;line-height:1.5;padding:1.5px 0}
+.sv-oi .o-mk{width:13px;height:13px;border-radius:50%;border:1.4px solid #E4E4EA!important;flex:0 0 auto}
+.sv-oi .o-mk.sq{border-radius:4px}
+.sv-oi.on{color:#2C2C32}
+.sv-oi.on .o-mk{background:#0B93F6;border-color:#0B93F6!important;border-width:1.4px}
+.sv-oi.on .o-mk.sq{background:#0B93F6;border-color:#0B93F6!important;border-width:1.4px;display:grid;place-items:center}
+.sv-oi.on .o-mk.sq svg{width:8px;height:8px;stroke:#fff;fill:none;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.sv-msg .sv-div{height:1px;background:#F1F1F4;margin:8px 0}
+.sv-cf{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#9A9AA4}
+.sv-cf .sv-go{display:inline-flex;align-items:center;gap:2px;color:#0B93F6;background:none;border:none;
+  font-family:inherit;font-size:11px;font-weight:700;padding:0}
+.sv-cf .sv-go svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+/* 问卷记录 */
+.sv-rec-row{display:flex;align-items:center;gap:10px;padding:13px 2px;border-bottom:1px solid #F4F4F7!important;border-radius:12px}
+.sv-rec-row:last-child{border-bottom:none!important}
+.sv-rec-row .tx{flex:1;min-width:0}
+.sv-rec-row .tx b{display:block;font-size:13.5px;color:#2C2C32;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sv-rec-row .tx span{display:block;font-size:11px;color:#9A9AA4;margin-top:3px}
+.sv-rec-row .st{font-size:11px;color:#9A9AA4;flex:0 0 auto}
+.sv-rec-row .st.done{color:#0B93F6}
+.sv-rec-row.on{background:#F4F4F7;padding-left:10px;padding-right:10px;border-bottom-color:transparent!important}
+
+/* 问卷结果弹窗 */
+.sv-res .rq{font-size:11px;color:#B0B0B9;margin-bottom:7px}
+.sv-res .ro{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:13px;color:#B0B0B9}
+.sv-res .rd{width:16px;height:16px;border-radius:50%;border:1.5px solid #E4E4EA!important;flex:0 0 auto;display:grid;place-items:center}
+.sv-res .rd.sq{border-radius:5px}
+.sv-res .ro.on{color:#2C2C32}
+.sv-res .ro.on .rd{background:#0B93F6;border-color:#0B93F6!important;border-width:1.5px}
+.sv-res .ro.on .rd.sq{background:#0B93F6;border-color:#0B93F6!important;border-width:1.5px}
+.sv-res .ro.on .rd.sq svg{width:9px;height:9px;stroke:#fff;fill:none;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.sv-res .grp{display:block;margin-bottom:13px}
+.sv-res .say{background:#F8F8FA;border:1px solid #ECECF2!important;border-radius:14px;padding:11px 12px;
+  font-size:12.5px;color:#5C5C66;line-height:1.6}
+.sv-res .say b{display:block;font-size:10.5px;color:#B0B0B9;margin-bottom:4px}
+
 /* ==== Settings：一页式，chip 切换区域 ==== */
 #p-settings .set-head{padding:8px 16px 0}
 #p-settings .me-card{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:#FAFAFB}
@@ -2165,6 +2265,9 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   </div>
   <div id="actionPanel" class="plus-panel">
     <div class="action-grid">
+      <button class="action-tile" data-a="survey">
+        <i><svg viewBox="0 0 24 24"><path d="M7 4h10a2 2 0 0 1 2 2v14l-7-3.6L5 20V6a2 2 0 0 1 2-2z"/><path d="M9 9.5h6M9 13h3.5"/></svg></i><span>问卷</span>
+      </button>
       <button class="action-tile" data-a="import">
         <i><svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M4.5 17.5l4.6-4.3 3.4 3 2.6-2.3 4.4 4.1"/></svg></i><span>导入表情</span>
       </button>
@@ -2206,6 +2309,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   </div>
   <div class="scroll" id="searchResults"></div>
 </section>
+
 
 <section class="app-page" id="compose">
   <div class="compose-bar">
@@ -2360,6 +2464,7 @@ function defaultState() {
       showName: true, showAvatar: true, showTime: true, readText: '已读', readStateOn: true, readIgnoreMin: 10,
       joinOn: true, splitChars: '，。、…～ ', quoteOn: true, quoteRate: 35, countMin: 1, countMax: 3,
       delayMin: 2, delayMax: 7,
+  surveyWaitMin: 1, surveyWaitMax: 5,
       callClock: 'min',
       proactiveOn: false, proactiveMin: 8, proactiveMax: 25,
       ghostOn: false, ghostRate: 25,
@@ -4181,6 +4286,12 @@ function rowHtml(m) {
     ? `<div class="bub bub-sticker">${MEDIA[m.sticker] ? `<img src="${MEDIA[m.sticker]}" alt="">` : ''}</div>`
     : `<div class="bub">${m.quote ? `<span class="quote">${esc(m.quote.text)}</span>` : ''}${esc(m.text)}</div>`) + meta;
   const avHtml = st.showAvatar === false ? '' : `<div class="av${av ? '' : ' av-txt'}"${av ? ` style="background-image:url('${av}')"` : ''}>${av ? '' : initial}</div>`;
+  if (m.survey) {
+    return `<div class="row ${mine ? 'me' : 'you'}" data-id="${m.id}">
+      ${avHtml}
+      <div class="stack">${surveyCardHtml(m)}${meta}</div>
+    </div>`;
+  }
   return `<div class="row ${mine ? 'me' : 'you'}" data-id="${m.id}">
     ${avHtml}
     <div class="stack">
@@ -4288,6 +4399,227 @@ function addPeerMsg(text, extra) {
     if (CUR === 'chat') playSendSound();
     else playNotifySound();
   }
+}
+
+/* ===== 问卷：我出题，对方作答 ===== */
+let svDraft = { mode: 'single', text: '', opts: ['', ''] };
+const svPending = {};   /* 还没作答的问卷：id → 预定时间 */
+const SV_MAX_OPT = 6;
+const SV_NUM = ['一', '二', '三', '四', '五', '六'];
+
+function svOptRowsHtml() {
+  return svDraft.opts.map((o, i) => `
+    <div class="sv-optrow" data-oi="${i}">
+      <input class="m-input" data-svopt="${i}" placeholder="选项${SV_NUM[i] || i + 1}" value="${esc(o)}">
+      ${svDraft.opts.length > 2 ? `<button class="sv-del" data-svdel="${i}">×</button>` : ''}
+    </div>`).join('');
+}
+
+/* 出题弹窗：跟「添加字卡」同一个居中弹窗样式 */
+function openSurveyCompose(seed) {
+  if (seed && seed.qs && seed.qs[0]) {
+    seed = { mode: seed.qs[0].mode, text: seed.qs[0].text, opts: seed.qs[0].opts.slice() };
+  }
+  svDraft = seed && seed.mode
+    ? { mode: seed.mode, text: seed.text || '', opts: (seed.opts || ['', '']).slice() }
+    : { mode: 'single', text: '', opts: ['', ''] };
+  const el = openSheet(`
+    <div class="m-blk">
+      <div class="sv-hd">
+        <h4>问卷</h4>
+        <button class="sv-reclink" data-svrec>问卷记录<svg viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></svg></button>
+      </div>
+      <div class="m-field" style="padding-top:0">
+        <span>类型</span>
+        <span class="sv-seg">
+          <button data-svmode="single" class="${svDraft.mode === 'single' ? 'on' : ''}">单选</button>
+          <button data-svmode="multi" class="${svDraft.mode === 'multi' ? 'on' : ''}">多选</button>
+        </span>
+      </div>
+      <input class="m-input" id="svQ" placeholder="问题" value="${esc(svDraft.text)}">
+      <div id="svOpts">${svOptRowsHtml()}</div>
+      <button class="sv-add" data-svaddopt><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>添加选项</button>
+    </div>
+    <button class="m-row" data-x="send"><span class="sp">发送</span></button>
+    <button class="m-row cancel" data-x="cancel">取消</button>`, el => {
+    setTimeout(() => { const q = el.querySelector('#svQ'); if (q) q.focus(); }, 160);
+
+    el.addEventListener('input', e => {
+      const t = e.target;
+      if (t.id === 'svQ') { svDraft.text = t.value; return; }
+      if (t.dataset.svopt !== undefined) svDraft.opts[+t.dataset.svopt] = t.value;
+    });
+
+    el.addEventListener('click', e => {
+      const rec = e.target.closest('[data-svrec]');
+      if (rec) { openSurveyRecords(); return; }
+      const mode = e.target.closest('[data-svmode]');
+      if (mode) {
+        svDraft.mode = mode.dataset.svmode;
+        el.querySelectorAll('[data-svmode]').forEach(b => b.classList.toggle('on', b.dataset.svmode === svDraft.mode));
+        return;
+      }
+      if (e.target.closest('[data-svaddopt]')) {
+        if (svDraft.opts.length < SV_MAX_OPT) {
+          svDraft.opts.push('');
+          el.querySelector('#svOpts').innerHTML = svOptRowsHtml();
+        }
+        return;
+      }
+      const del = e.target.closest('[data-svdel]');
+      if (del) {
+        if (svDraft.opts.length > 2) {
+          svDraft.opts.splice(+del.dataset.svdel, 1);
+          el.querySelector('#svOpts').innerHTML = svOptRowsHtml();
+        }
+        return;
+      }
+      const b = e.target.closest('[data-x]');
+      if (!b) return;
+      if (b.dataset.x === 'send') { publishSurvey(); return; }
+      closeSheet();
+    });
+  }, 'center');
+}
+
+function publishSurvey() {
+  const qtext = (svDraft.text || '').trim();
+  const opts = svDraft.opts.map(o => (o || '').trim()).filter(Boolean);
+  if (!qtext) return toast('先写一个问题');
+  if (opts.length < 2) return toast('至少要有两个选项');
+  const m = {
+    id: uid(), role: 'me', text: '[问卷]', ts: Date.now(),
+    survey: { qs: [{ mode: svDraft.mode, text: qtext, opts }], at: Date.now(), answeredAt: null }
+  };
+  pushMsg(m);
+  S.lastSeen = Math.max(S.lastSeen || 0, m.ts);
+  save();
+  renderMsgs(); renderChats(); updateTabDots();
+  closeSheet();
+  toast('已发出');
+  scheduleSurveyAnswer(m.id);
+}
+
+/* 对方不一定紧接着回：45 秒到 5 分钟之间随手挑一个点 */
+function scheduleSurveyAnswer(id) {
+  const st = S.settings;
+  const lo = Math.max(1, Math.min(30, Number(st.surveyWaitMin) || 1));
+  const hi = Math.max(lo, Math.min(60, Number(st.surveyWaitMax) || 5));
+  const wait = Math.round((lo + Math.random() * (hi - lo)) * 60000);
+  svPending[id] = Date.now() + wait;
+  setTimeout(() => {
+    const m = S.messages.find(x => x.id === id);
+    delete svPending[id];
+    if (!m || !m.survey || m.survey.answeredAt) return;
+    ensurePeerOnline();
+    finishSurveyReply(id);
+  }, wait);
+}
+
+function finishSurveyReply(id) {
+  delete svPending[id];
+  const m = S.messages.find(x => x.id === id);
+  if (!m || !m.survey || m.survey.answeredAt) return;
+  const qs = m.survey.qs || [];
+  const answers = qs.map(q => {
+    const n = q.opts.length;
+    const idxs = [];
+    if (q.mode === 'multi') {
+      q.opts.forEach((_, i) => { if (Math.random() < 0.55 / (i + 1)) idxs.push(i); });
+      if (!idxs.length) idxs.push(0);
+    } else {
+      let r = Math.random() * q.opts.reduce((s, _, i) => s + 1 / (i + 1.6), 0);
+      let k = 0;
+      for (let i = 0; i < n; i++) { k = i; r -= 1 / (i + 1.6); if (r <= 0) break; }
+      idxs.push(k);
+    }
+    return idxs.sort((a, b) => a - b);
+  });
+  const cards = pool();
+  const remark = cards.length ? pick(cards).text.replace(/\s+$/, '') : '';
+  m.survey.answeredAt = Date.now();
+  save();
+  addPeerMsg('[问卷]', { survey: Object.assign({}, m.survey, { answers, remark, of: m.id }) });
+}
+
+/* 聊天里的卡：我发的铺开题目和选项、不可点；对方答完发回来的才可点 */
+function surveyCardHtml(m) {
+  const s = m.survey || {};
+  const qs = s.qs || [];
+  const answered = !!s.answers;
+  const icon = '<svg viewBox="0 0 24 24"><path d="M7 4h10a2 2 0 0 1 2 2v14l-7-3.6L5 20V6a2 2 0 0 1 2-2z"/></svg>';
+  const head = `<div class="sv-h"><span class="sv-ico">${icon}</span><b>${answered ? '问卷 · 答好了' : '问卷'}</b><em>${esc(hhmm(m.ts))}</em></div>`;
+  const rows = qs.map((q, qi) => {
+    const picked = answered ? (s.answers[qi] || []) : [];
+    return `<div class="sv-qa">
+      <span class="sv-qq">${esc(q.text)}</span>
+      ${q.opts.map((o, oi) => {
+        const on = picked.indexOf(oi) >= 0;
+        return `<span class="sv-oi${on ? ' on' : ''}"><span class="o-mk${q.mode === 'multi' ? ' sq' : ''}">${q.mode === 'multi' && on ? '<svg viewBox="0 0 24 24"><path d="M4 12.5 9 17.5 20 6.5"/></svg>' : ''}</span>${esc(o)}</span>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+  if (!answered) return `<div class="sv-msg">${head}${rows}</div>`;
+  return `<div class="sv-msg" data-svopen="${m.id}">${head}${rows}
+    <div class="sv-div"></div>
+    <div class="sv-cf"><span>${qs.length} 题</span>
+      <button class="sv-go" data-svopen="${m.id}">查看全部<svg viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></svg></button></div>
+  </div>`;
+}
+
+function openSurveyResult(id) {
+  if (!id) return;
+  const m = S.messages.find(x => x.id === id);
+  if (!m || !m.survey || !m.survey.answers) return;
+  const s = m.survey;
+  const qs = s.qs || [];
+  openSheet(`<div class="m-blk sv-res" style="max-height:58vh;overflow-y:auto">
+    <div style="font-size:11.5px;color:#9A9AA4;margin-bottom:14px">${esc(hhmm(m.ts))}</div>
+    ${qs.map((q, qi) => `<div class="grp">
+        <div class="rq">${esc(q.text)}</div>
+        ${q.opts.map((o, oi) => {
+          const on = (s.answers[qi] || []).indexOf(oi) >= 0;
+          return `<div class="ro${on ? ' on' : ''}"><span class="rd${q.mode === 'multi' ? ' sq' : ''}">${q.mode === 'multi' && on ? '<svg viewBox="0 0 24 24"><path d="M4 12.5 9 17.5 20 6.5"/></svg>' : ''}</span>${esc(o)}</div>`;
+        }).join('')}
+      </div>`).join('')}
+    ${s.remark ? `<div class="say"><b>附言</b>${esc(s.remark)}</div>` : ''}
+  </div>
+  <button class="m-row cancel" data-svclose>关闭</button>`, el => {
+    const b = el.querySelector('[data-svclose]');
+    if (b) b.addEventListener('click', closeSheet);
+  }, 'center');
+}
+
+/* 问卷记录：发过的每一份，按时间倒序 */
+function openSurveyRecords() {
+  const mine = (S.messages || []).filter(m => m.role === 'me' && m.survey).slice().reverse();
+  const rows = mine.map(m => {
+    const s = m.survey;
+    const ans = (S.messages || []).find(x => x.survey && x.survey.answers && x.survey.of === m.id);
+    const mode = s.qs.some(q => q.mode === 'multi') ? '多选' : '单选';
+    return `<div class="sv-rec-row">
+      <div class="tx"><b>${esc(s.qs[0] ? s.qs[0].text : '问卷')}</b>
+        <span>${esc(hhmm(m.ts))} · ${mode}</span></div>
+      <span class="st${ans ? ' done' : ''}">${ans ? '已答' : '未答'}</span>
+    </div>`;
+  }).join('');
+  openSheet(`<div class="m-blk" style="max-height:56vh;overflow-y:auto">
+    <div class="sv-hd"><h4>问卷记录</h4><span class="sv-count">${mine.length} 份</span></div>
+    ${rows || '<div class="m-desc">还没发过问卷</div>'}
+  </div>
+  <button class="m-row cancel" data-svback>返回</button>`, el => {
+    const b = el.querySelector('[data-svback]');
+    if (b) b.addEventListener('click', () => openSurveyCompose(svDraft));
+  }, 'center');
+}
+
+function bindSurvey() {
+  document.addEventListener('click', e => {
+    const op = e.target.closest('[data-svopen]');
+    if (!op) return;
+    e.stopPropagation();
+    openSurveyResult(op.dataset.svopen);
+  }, true);
 }
 
 function notifyIfNeeded(text) {
@@ -4428,6 +4760,8 @@ function armProactive() {
   proactiveTimer = setTimeout(() => {
     const s2 = S.settings;
     if (!s2.proactiveOn && !s2.proactiveCallOn) return;
+    /* 还有问卷在等作答：这一轮主动消息直接跳过，不与问卷撞车 */
+    if (Object.keys(svPending).length) { armProactive(); return; }
     const wantCall = s2.proactiveCallOn && Math.random() * 100 < s2.proactiveCallRate;
     if (wantCall) {
       /* 对方来电：语音 / 视频 各 50% */
@@ -5190,6 +5524,7 @@ function bindChat() {
     if (!b) return;
     const a = b.dataset.a;
     if (a === 'search') { closePanels(); go('search'); return; }
+    if (a === 'survey') { closePanels(); openSurveyCompose(); return; }
     if (a === 'sticker') { closeActionPanel(); $('#btnEmoji').click(); return; }
     if (a === 'import') {
       closePanels();
@@ -6138,6 +6473,7 @@ function renderSettings() {
 
   html += block('回复与主动', [
     rowNums('回复延迟', 'settings.delayMin', 'settings.delayMax', st.delayMin, st.delayMax, '秒'),
+    rowNums('问卷作答', 'settings.surveyWaitMin', 'settings.surveyWaitMax', st.surveyWaitMin, st.surveyWaitMax, '分钟'),
     rowSw('主动发消息', 'settings.proactiveOn', st.proactiveOn),
     rowNums('主动间隔', 'settings.proactiveMin', 'settings.proactiveMax', st.proactiveMin, st.proactiveMax, '分钟'),
     rowSw('已读不回', 'settings.ghostOn', st.ghostOn),
@@ -6889,6 +7225,7 @@ async function resetAll() {
   updateTabDots();
   bindChat();
   bindPcard();
+  bindSurvey();
   const hintEl = document.getElementById('msgHint');
   if (hintEl) hintEl.addEventListener('click', () => { hintEl.classList.remove('on'); go('chat'); });
   document.addEventListener('click', e => {
