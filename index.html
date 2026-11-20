@@ -1700,6 +1700,28 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .sheet.center .sv-seg button{font-family:inherit;font-size:11px;font-weight:700;padding:4px 10px;border:none;border-radius:6px;background:none;color:#8E8E98}
 .sheet.center .sv-seg button.on{background:#fff;color:#2C2C32;box-shadow:0 1px 2px rgba(19,19,23,.06)}
 
+/* 加号面板：去掉 max-height 逐帧重排（卡顿源头），改成内容淡入 */
+.plus-panel{transition:none!important;will-change:auto}
+#actionPanel .action-grid,#stickerPanel .sticker-grid{animation:pnlIn .16s cubic-bezier(.22,.72,.2,1) both}
+@keyframes pnlIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* 问卷记录：点一条展开看题目、选项、附言 */
+.sv-rec-item{border-bottom:1px solid #F4F4F7!important}
+.sv-rec-item:last-child{border-bottom:none!important}
+.sv-rec-item .sv-rec-row{border-bottom:none!important}
+.sv-rec-det{display:none;padding:0 2px 12px}
+.sv-rec-item.open .sv-rec-det{display:block}
+.sv-rec-det .sv-qq{display:block;font-size:11px;color:#B0B0B9;line-height:1.45;margin-bottom:6px}
+.sv-rec-det .ro{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12.5px;color:#B0B0B9}
+.sv-rec-det .ro .rd{width:15px;height:15px;border-radius:50%;border:1.4px solid #E4E4EA!important;flex:0 0 auto;display:grid;place-items:center}
+.sv-rec-det .ro .rd.sq{border-radius:4px}
+.sv-rec-det .ro.on{color:#2C2C32}
+.sv-rec-det .ro.on .rd{background:#0B93F6;border-color:#0B93F6!important}
+.sv-rec-det .ro.on .rd.sq svg{width:9px;height:9px;stroke:#fff;fill:none;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.sv-rec-det .say{margin-top:10px;background:#F8F8FA;border:1px solid #ECECF2!important;border-radius:14px;
+  padding:11px 12px;font-size:12.5px;color:#5C5C66;line-height:1.6}
+.sv-rec-det .say b{display:block;font-size:10.5px;color:#B0B0B9;margin-bottom:4px}
+
 /* 聊天里的问卷卡 */
 .sv-msg{width:262px;background:#fff;border:1px solid #ECECF2!important;border-radius:16px;padding:12px 13px}
 .sv-msg .sv-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}
@@ -3761,12 +3783,12 @@ function openComments(id) {
   if (!p) return;
   p.comments = p.comments || [];
   openSheet(`
-    <h3>评论</h3>
-    <textarea class="fld" id="cmtInput" placeholder="写条评论…" style="min-height:96px"></textarea>
-    <div class="sheet-actions">
-      <button data-x="0">取消</button>
-      <button data-x="1" class="primary">发送</button>
-    </div>`, el => {
+    <div class="m-blk">
+      <h4>评论</h4>
+      <textarea class="m-ta" id="cmtInput" placeholder="写条评论…" style="min-height:96px"></textarea>
+    </div>
+    <button class="m-row" data-x="1"><span class="sp">发送</span></button>
+    <button class="m-row cancel" data-x="0">取消</button>`, el => {
     const ta = el.querySelector('#cmtInput');
     setTimeout(() => ta.focus(), 180);
     el.addEventListener('click', e => {
@@ -3786,7 +3808,7 @@ function openComments(id) {
       }
       closeSheet();
     });
-  });
+  }, 'center');
 }
 
 /* 发帖时的 @ 列表 */
@@ -4597,10 +4619,22 @@ function openSurveyRecords() {
     const s = m.survey;
     const ans = (S.messages || []).find(x => x.survey && x.survey.answers && x.survey.of === m.id);
     const mode = s.qs.some(q => q.mode === 'multi') ? '多选' : '单选';
-    return `<div class="sv-rec-row">
-      <div class="tx"><b>${esc(s.qs[0] ? s.qs[0].text : '问卷')}</b>
-        <span>${esc(hhmm(m.ts))} · ${mode}</span></div>
-      <span class="st${ans ? ' done' : ''}">${ans ? '已答' : '未答'}</span>
+    const q = s.qs[0] || { text: '', opts: [], mode: 'single' };
+    const picked = ans ? (ans.survey.answers[0] || []) : [];
+    const opts = q.opts.map((o, oi) => {
+      const on = picked.indexOf(oi) >= 0;
+      return `<div class="ro${on ? ' on' : ''}"><span class="rd${q.mode === 'multi' ? ' sq' : ''}">${q.mode === 'multi' && on ? '<svg viewBox="0 0 24 24"><path d="M4 12.5 9 17.5 20 6.5"/></svg>' : ''}</span>${esc(o)}</div>`;
+    }).join('');
+    return `<div class="sv-rec-item" data-exp>
+      <div class="sv-rec-row">
+        <div class="tx"><b>${esc(q.text || '问卷')}</b>
+          <span>${esc(hhmm(m.ts))} · ${mode}</span></div>
+        <span class="st${ans ? ' done' : ''}">${ans ? '已答' : '未答'}</span>
+      </div>
+      <div class="sv-rec-det">
+        ${opts}
+        ${ans && ans.survey.remark ? `<div class="say"><b>附言</b>${esc(ans.survey.remark)}</div>` : ''}
+      </div>
     </div>`;
   }).join('');
   openSheet(`<div class="m-blk" style="max-height:56vh;overflow-y:auto">
@@ -4608,6 +4642,10 @@ function openSurveyRecords() {
     ${rows || '<div class="m-desc">还没发过问卷</div>'}
   </div>
   <button class="m-row cancel" data-svback>返回</button>`, el => {
+    el.addEventListener('click', e => {
+      const item = e.target.closest('[data-exp]');
+      if (item) { item.classList.toggle('open'); return; }
+    });
     const b = el.querySelector('[data-svback]');
     if (b) b.addEventListener('click', () => openSurveyCompose(svDraft));
   }, 'center');
