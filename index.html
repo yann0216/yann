@@ -3500,7 +3500,7 @@ function peerRepost(postId) {
     const kmin = clamp(S.settings.peerRepostTextMin, 1);
     const kmax = Math.max(kmin, clamp(S.settings.peerRepostTextMax, kmin));
     const k = randInt(kmin, kmax);
-    text = sampleCards(cards, k).map(c => c.text.replace(/[，,。.、…～~！!？?；;：:\s]+$/, '')).join(' ');
+    text = sampleCards(cards, k).map(c => c.text.replace(/\s+$/, '')).join(' ');
   }
   S.posts = S.posts || [];
   S.posts.push({
@@ -3536,7 +3536,7 @@ function peerMakePost() {
   const cMax = Math.max(cMin, Math.min(6, Math.round(Number(S.settings.postCardsMax) || cMin)));
   const n = randInt(cMin, cMax);
   const sep = ' ';
-  let text = sampleCards(cards, n).map(c => c.text.replace(/[，,。.、…～~！!？?；;：:\s]+$/, '')).join(sep);
+  let text = sampleCards(cards, n).map(c => c.text.replace(/\s+$/, '')).join(sep);
   if (S.settings.peerMentionOn && Math.random() * 100 < (S.settings.peerMentionRate || 0)) {
     text += ' ' + AT_ME;
   }
@@ -3604,7 +3604,7 @@ function armCommentReply(postId) {
     p.comments = p.comments || [];
     for (let i = 0; i < n; i++) {
       const k = randInt(kmin, kmax);
-      const text = sampleCards(cards, k).map(c => c.text.replace(/[，,。.、…～~！!？?；;：:\s]+$/, '')).join(' ');
+      const text = sampleCards(cards, k).map(c => c.text.replace(/\s+$/, '')).join(' ');
       p.comments.push({ id: uid(), text, ts: Date.now() + i, by: 'peer' });
     }
     save();
@@ -4158,7 +4158,14 @@ function rowHtml(m) {
   const st = S.settings;
   const mine = m.role === 'me';
   if (m.recalled) return `<div class="sysline">${mine ? '你' : '对方'}撤回了一条消息</div>`;
-  if (m.role === 'system') return `<div class="sysline" data-id="${m.id}">${esc(m.text)}</div>`;
+  if (m.role === 'system') {
+    /* 只在聊天界面补：14:03 已拒绝 视频通话 响铃 3 秒。m.text 本身不动，时间轴 / 通话记录读的就是它 */
+    const at = m.callAt ? callClock(m.callAt) + ' ' : '';
+    if (m.callSec && m.callStatus) {
+      return `<div class="sysline" data-id="${m.id}">${at}${esc(m.callStatus)} ${esc(m.callKind || '')} 响铃 ${m.callSec} 秒</div>`;
+    }
+    return `<div class="sysline" data-id="${m.id}">${at}${esc(m.text)}</div>`;
+  }
   const name = mine ? S.me.name : peerLabel();
   const person = mine ? S.me : S.peer;
   const av = avatarUrl(person.avatar);
@@ -4853,7 +4860,15 @@ function callDurText(ms) {
   return mmss(ms);
 }
 function callLabel(t) { return t === 'video' ? '视频通话' : '语音通话'; }
-function sysLine(text) { pushMsg({ id: uid(), role: 'system', text, ts: Date.now() }); renderMsgs(); }
+/* 通话记录统一带时刻：11:12 语音通话 · 未接来电 18 秒 */
+function callClock(ts) {
+  const d = new Date(ts || Date.now());
+  return pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function callRingSec() {
+  return Math.max(1, Math.round((Date.now() - (Call.ringStart || Call.ts || Date.now())) / 1000));
+}
+function sysLine(text, extra) { pushMsg(Object.assign({ id: uid(), role: 'system', text, ts: Date.now() }, extra || {})); renderMsgs(); }
 
 function stopRing() { if (Call.ring) { clearInterval(Call.ring); Call.ring = null; } }
 function startRing() {
@@ -4874,6 +4889,8 @@ function clearCallTimers() {
 function showCall(type, status, ringing) {
   const scr = $('#call');
   scr.style.pointerEvents = '';   /* 清掉可能残留的内联禁用，保证按钮可点 */
+  Call.ts = Date.now();           /* 这通电话发起的时刻，写进系统行 */
+  Call.ringStart = Date.now();
   scr.classList.add('on');
   scr.classList.toggle('active', !ringing);
   $('#callKind').textContent = callLabel(type);
@@ -4900,7 +4917,7 @@ function showCall(type, status, ringing) {
   $('#cmTime').textContent = '00:00';
 }
 
-function endCall(sysText, delay) {
+function endCall(sysText, delay, extra) {
   if (!Call.on || Call.state === 'ended') return;
   Call.state = 'ended';
   clearCallTimers();
@@ -4912,7 +4929,7 @@ function endCall(sysText, delay) {
     Call.on = false;
     Call.state = '';
     Call.timers = [];
-    if (sysText) sysLine(sysText);
+    if (sysText) sysLine(sysText, extra);
   }, delay === undefined ? 700 : delay));
 }
 
@@ -4959,7 +4976,7 @@ function outgoingCall(type) {
       activateCall();
     } else {
       $('#callStatus').textContent = '对方无应答';
-      endCall(callLabel(type) + ' · 无应答', 1400);
+      endCall(callLabel(type) + ' · 无应答', 1400, { callAt: Call.ts, callSec: callRingSec(), callStatus: '无应答', callKind: callLabel(type) });
     }
   }, rand(2200, 5200)));
 }
@@ -4974,7 +4991,7 @@ function incomingCall(type) {
     if (Call.state !== 'incoming') return;
     stopRing();
     $('#callStatus').textContent = '未接听';
-    endCall(callLabel(type) + ' · 未接来电', 1200);
+    endCall(callLabel(type) + ' · 未接来电', 1200, { callAt: Call.ts, callSec: callRingSec(), callStatus: '未接来电', callKind: callLabel(type) });
   }, 20000));
 }
 
@@ -4997,7 +5014,7 @@ function restoreCall() {
 function hangUp() {
   if (!Call.on) return;
   const st = Call.state;
-  if (st === 'incoming') endCall('已拒绝 · ' + callLabel(Call.type), 320);
+  if (st === 'incoming') endCall('已拒绝 · ' + callLabel(Call.type), 320, { callAt: Call.ts, callSec: callRingSec(), callStatus: '已拒绝', callKind: callLabel(Call.type) });
   else if (st === 'active') endCall('通话结束 · ' + callDurText(Date.now() - Call.start), 320);
   else if (st === 'dialing') endCall('已取消 · ' + callLabel(Call.type), 320);
 }
